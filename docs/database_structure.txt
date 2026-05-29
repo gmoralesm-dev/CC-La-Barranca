@@ -1,0 +1,76 @@
+{
+  "CLAP-La-Barranca": {
+    "data": {
+      "registered_users": {
+        "user_uid_1": {
+          "email": "user1@example.com",
+          "fullName": "Registered User One",
+          "role": "lider_de_calle",
+          "createdAt": 1678886400000
+        },
+        "user_uid_2": {
+          "email": "user2@example.com",
+          "fullName": "Registered User Two",
+          "role": "miembro_comunidad",
+          "createdAt": 1678886400000
+        }
+      },
+      "visitors": {
+        "visitor_uid_1": {
+          "email": "guest_visitor_uid_1@example.com",
+          "fullName": "Guest User One",
+          "role": "guest",
+          "createdAt": 1678886400000,
+          "date": "2023-03-15T12:00:00.000Z"
+        }
+      },
+      "families": {
+        "family_id_1": {
+          "familyName": "Family One",
+          "bombonas": [
+            { "tamano": "10kg", "condicion": "Buen estado" }
+          ],
+          "createdAt": 1678886400000,
+          "updatedAt": 1678886400000,
+          "cedulaJefe": "12345678",
+          "direccion": "Street 1",
+          "telefonoContacto": "1234567890",
+          "members": {
+            "member_id_1": {
+              "memberName": "Member One",
+              "isHead": true,
+              "...": "..."
+            }
+          },
+          "receipts": {
+            "receipt_id_1": {
+              "eventName": "Event One",
+              "...": "..."
+            }
+          }
+        }
+      },
+      "deliveries": {
+        "delivery_id_1": {
+          "eventName": "Delivery One",
+          "eventDate": "2023-03-15",
+          "...": "..."
+        }
+      },
+      "comunicados": {
+        "post_id_1": {
+          "content": "This is a post.",
+          "authorName": "Registered User One",
+          "createdAt": "2023-03-15T12:00:00.000Z",
+          "comments": {
+            "comment_id_1": {
+              "content": "This is a comment.",
+              "authorName": "Guest User One",
+              "createdAt": "2023-03-15T12:00:00.000Z"
+            }
+          }
+        }
+      }
+    }
+  }
+}

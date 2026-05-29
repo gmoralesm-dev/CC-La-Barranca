@@ -1,0 +1,61 @@
+{
+  "users": {
+    "userId": {
+      "email": "string",
+      "role": "string",
+      "associatedMemberId": "string"
+    }
+  },
+  "members": {
+    "memberId": {
+      "firstName": "string",
+      "lastName": "string",
+      "cedula": "string",
+      "address": "string",
+      "phone": "string",
+      "email": "string",
+      "familyId": "string",
+      "isHeadOfFamily": "boolean",
+      "status": "string"
+    }
+  },
+  "families": {
+    "familyId": {
+      "familyName": "string",
+      "headOfFamilyId": "string",
+      "members": ["memberId1", "memberId2"]
+    }
+  },
+  "deliveryEvents": {
+    "eventId": {
+      "name": "string",
+      "date": "timestamp",
+      "description": "string",
+      "deliveredTo": ["memberId1", "memberId2"]
+    }
+  },
+  "comunicados": {
+    "comunicadoId": {
+      "title": "string",
+      "content": "string",
+      "date": "timestamp",
+      "authorId": "string"
+    }
+  },
+  "certificates": {
+    "certificateId": {
+      "type": "string",
+      "memberId": "string",
+      "dateIssued": "timestamp",
+      "details": "string"
+    }
+  },
+  "reports": {
+    "reportId": {
+      "type": "string",
+      "generatedBy": "userId",
+      "dateGenerated": "timestamp",
+      "data": "object"
+    }
+  }
+}

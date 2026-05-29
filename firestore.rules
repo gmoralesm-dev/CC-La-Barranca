@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check the user's role from their document in the database
+    function getUserRole() {
+      return get(/databases/$(database)/documents/Consejo-Comunal-La-Barranca/data/users/$(request.auth.uid)).data.role;
+    }
+
+    // Helper function to check if the user is a community manager or administrator
+    function isManager() {
+      return request.auth != null && 
+        (getUserRole() == 'administrador' || 
+         getUserRole() == 'admin' || 
+         getUserRole() == 'lider_de_calle' || 
+         getUserRole() == 'vocera_principal');
+    }
+
+    match /Consejo-Comunal-La-Barranca/{data} {
+      
+      // Allow public read access to announcements (comunicados) and their comments; write for authenticated users
+      match /comunicados/{comunicadoId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+
+        match /comments/{commentId} {
+          allow read: if true;
+          allow write: if request.auth != null;
+        }
+      }
+
+      // Allow authenticated users to read family data; write access restricted to managers
+      match /families/{familyId} {
+        allow read: if request.auth != null;
+        allow write: if isManager();
+        
+        // Rules for nested members subcollection
+        match /members/{memberId} {
+          allow read: if request.auth != null;
+          allow write: if isManager();
+        }
+
+        // Rules for nested receipts subcollection
+        match /receipts/{receiptId} {
+          allow read: if request.auth != null;
+          allow write: if isManager();
+        }
+      }
+
+      // Allow authenticated users to read and update their own user record
+      match /users/{userId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Allow authenticated guests to read and update their own guest session record
+      match /invitados/{guestId} {
+        allow read, write: if request.auth != null && request.auth.uid == guestId;
+      }
+
+      // Allow authenticated users to read delivery events; write access restricted to managers
+      match /deliveries/{eventId} {
+        allow read: if request.auth != null;
+        allow write: if isManager();
+      }
+
+      // Allow authenticated users to read certificates; write access restricted to managers
+      match /certificates/{certificateId} {
+        allow read: if request.auth != null;
+        allow write: if isManager();
+      }
+
+      // Allow authenticated users to read reports; write access restricted to managers
+      match /reports/{reportId} {
+        allow read: if request.auth != null;
+        allow write: if isManager();
+      }
+    }
+  }
+}
