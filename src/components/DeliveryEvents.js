@@ -171,7 +171,7 @@ const DeliveryEvents = ({ db, userId }) => {
                     />
                 </label>
                 <textarea
-                    placeholder="Descripción del Evento (ej: Bolsas CLAP, Campo Soberano, Proteínas)"
+                    placeholder="Descripción del Evento (ej: Beneficios, Campo Soberano, Proteínas)"
                     value={eventDescription}
                     onChange={(e) => setEventDescription(e.target.value)}
                     rows="3"

@@ -9,6 +9,7 @@ import DeliveryEvents from './components/DeliveryEvents';
 import Reports from './components/Reports';
 import Dashboard from './components/Dashboard';
 import Comunicados from './components/Comunicados';
+import logo from './assets/logo-cc-la-barranca.png';
 
 const App = () => {
     const [userId, setUserId] = useState(null);
@@ -51,11 +52,14 @@ const App = () => {
                             const guestDocRef = doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, user.uid);
                             const guestSnap = await getDoc(guestDocRef);
                             if (guestSnap.exists()) {
-                                setUserRole(guestSnap.data().role);
+                                setUserRole(guestSnap.data().role || 'guest');
+                            } else {
+                                setUserRole("desconocido");
+                                setError("No se encontró el perfil en la base de datos. Si usas el emulador, puede que se haya limpiado.");
                             }
                         }
                     } else {
-                        setUserRole(adminSnap.data().role);
+                        setUserRole(adminSnap.data().role || 'administrador');
                     }
                 } catch (err) {
                     console.error("Auth State Error:", err);
@@ -91,7 +95,7 @@ const App = () => {
         try {
             const userCredential = await signInAnonymously(auth);
             await setDoc(doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, userCredential.user.uid), {
-                email: `invitado_${userCredential.user.uid}@clap.local`,
+                email: `invitado_${userCredential.user.uid}@comunidad.local`,
                 fullName: guestName,
                 role: 'guest',
                 createdAt: new Date()
@@ -112,7 +116,7 @@ const App = () => {
     };
 
     const isManagerRole = () => {
-        const managers = ['lider_de_calle', 'administrador', 'admin'];
+        const managers = ['lider_de_calle', 'administrador', 'admin', 'vocera_principal', 'vocera', 'vocero'];
         return managers.includes(userRole);
     };
 
@@ -146,6 +150,9 @@ const App = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
                 <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
+                    <div className="flex justify-center mb-6">
+                        <img src={logo} alt="Logo CC La Barranca" className="h-24 object-contain" />
+                    </div>
                     <h1 className="text-2xl font-extrabold text-center text-indigo-700 mb-8 leading-tight">
                         Consejo Comunal<br/>La Barranca
                     </h1>
@@ -177,9 +184,12 @@ const App = () => {
         <div className="min-h-screen bg-gray-100 p-4 md:p-8">
             <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-6">
                 <header className="flex flex-col md:flex-row justify-between items-center border-b pb-6 mb-6 gap-4">
-                    <h1 className="text-xl font-bold text-indigo-800 text-center md:text-left">
-                        Consejo Comunal La Barranca
-                    </h1>
+                    <div className="flex items-center gap-4">
+                        <img src={logo} alt="Logo" className="h-12 w-auto" />
+                        <h1 className="text-xl font-bold text-indigo-800 text-center md:text-left">
+                            Consejo Comunal La Barranca
+                        </h1>
+                    </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
                             <p className="text-sm font-bold text-gray-700">{userEmail}</p>

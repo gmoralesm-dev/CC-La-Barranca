@@ -1,882 +1,434 @@
-import React, { useState, useEffect } from 'react';
+// src/components/MemberManagement.js
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 
+// 🔍 MOTOR DE VALIDACIÓN CENTRALIZADO
+const VALIDATORS = {
+  name: (val) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'\-]+$/.test(val?.trim()),
+  cedula: (val) => {
+    if (!val?.trim()) return { isValid: true, formatted: '' };
+    let clean = val.trim().toUpperCase();
+    if (/^[VE]\d{5,9}$/.test(clean)) clean = clean[0] + '-' + clean.substring(1);
+    return { isValid: /^[VE]-\d{5,9}$/.test(clean), formatted: clean };
+  },
+  date: (val) => {
+    if (!val) return { isValid: false, error: 'Fecha requerida' };
+    const d = new Date(val);
+    if (isNaN(d)) return { isValid: false, error: 'Fecha inválida' };
+    if (d > new Date()) return { isValid: false, error: 'No puede ser futura' };
+    return { isValid: true };
+  },
+  phone: (val) => {
+    if (!val?.trim()) return { isValid: true, formatted: '' };
+    const clean = val.replace(/[^\d+]/g, '');
+    return { isValid: /^(\+58)?0[4|2]\d{9}$/.test(clean), formatted: clean };
+  },
+  required: (val, label) => {
+    if (!val || (typeof val === 'string' && !val.trim())) {
+      return { isValid: false, error: `${label} es requerido` };
+    }
+    return { isValid: true };
+  }
+};
+
+// 🧩 COMPONENTES UI REUTILIZABLES
+const FormInput = ({ label, error, value, onChange, onBlur, type = 'text', placeholder, required, transform }) => (
+  <div className="space-y-1">
+    {label && <label className="block text-gray-700 text-sm font-bold">{label}{required && ' *'}</label>}
+    <input
+      type={type}
+      value={value || ''}
+      onChange={(e) => onChange(transform ? transform(e.target.value) : e.target.value)}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${error ? 'border-red-300 bg-red-50 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+      required={required}
+    />
+    {error && <p className="text-red-500 text-xs flex items-center gap-1">⚠️ {error}</p>}
+  </div>
+);
+
+const FormSelect = ({ label, error, value, onChange, options, required }) => (
+  <div className="space-y-1">
+    {label && <label className="block text-gray-700 text-sm font-bold">{label}{required && ' *'}</label>}
+    <select
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${error ? 'border-red-300 bg-red-50 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+      required={required}
+    >
+      <option value="">Seleccionar</option>
+      {options.map(opt => <option key={opt.value || opt} value={opt.value || opt}>{opt.label || opt}</option>)}
+    </select>
+    {error && <p className="text-red-500 text-xs">⚠️ {error}</p>}
+  </div>
+);
+
+const MemberCard = ({ member, onEdit, onDelete }) => (
+  <div className={`bg-white rounded-xl shadow-md p-5 space-y-2 border ${member.isHead ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-gray-200'}`}>
+    <h4 className="text-lg font-semibold text-gray-900">{member.memberName} {member.isHead && <span className="text-indigo-600 font-bold">(Jefe)</span>}</h4>
+    <p className="text-gray-700 text-sm">Cédula: {member.memberCedula || 'N/A'}</p>
+    <p className="text-gray-700 text-sm">Edad: {member.age || 'N/A'} | Género: {member.memberGender}</p>
+    <p className="text-gray-700 text-sm">Escolaridad: {member.escolaridad}</p>
+    {member.discapacidad && <p className="text-red-600 text-sm font-medium"> Discapacidad: {member.tipoDiscapacidad}</p>}
+    {member.enfermedadCronica && <p className="text-orange-600 text-sm font-medium">🏥 Enf. Crónica: {member.tipoEnfermedad}</p>}
+    {member.medicinas && member.enfermedadCronica && <p className="text-gray-600 text-xs italic">💊 Medicinas: {member.medicinas}</p>}
+    <div className="flex justify-end gap-2 mt-3">
+      <button onClick={() => onEdit(member)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Editar</button>
+      <button onClick={() => onDelete(member)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Eliminar</button>
+    </div>
+  </div>
+);
+
+const ReceiptCard = ({ receipt, onEdit, onDelete }) => (
+  <div className="bg-white rounded-xl shadow-md p-5 space-y-2 border border-green-200">
+    <p className="text-lg font-semibold text-gray-900">📦 {receipt.eventName} ({receipt.eventDate})</p>
+    <p className="text-gray-700 text-sm">Tipo: {receipt.eventType} | Bolsas: {receipt.bagQuantity}</p>
+    <p className="text-gray-700 text-sm">Recibido por: {receipt.receivedBy.name} (CI: {receipt.receivedBy.cedula})</p>
+    {receipt.notes && <p className="text-gray-600 text-xs italic">📝 {receipt.notes}</p>}
+    <div className="flex justify-end gap-2 mt-3">
+      <button onClick={() => onEdit(receipt)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Editar</button>
+      <button onClick={() => onDelete(receipt)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Eliminar</button>
+    </div>
+  </div>
+);
+
+// 🏠 COMPONENTE PRINCIPAL
 const MemberManagement = ({ db, userId, family, onBack }) => {
-    const [members, setMembers] = useState([]);
-    const [headOfFamily, setHeadOfFamily] = useState(null);
-    const [currentMember, setCurrentMember] = useState(null);
-    const [memberName, setMemberName] = useState('');
-    const [memberCedula, setMemberCedula] = useState('');
-    const [fechaNacimiento, setFechaNacimiento] = useState('');
-    const [memberGender, setMemberGender] = useState('');
-    const [discapacidad, setDiscapacidad] = useState(false);
-    const [tipoDiscapacidad, setTipoDiscapacidad] = useState('');
-    const [escolaridad, setEscolaridad] = useState('');
-    const [enfermedadCronica, setEnfermedadCronica] = useState(false);
-    const [tipoEnfermedad, setTipoEnfermedad] = useState('');
-    const [medicinas, setMedicinas] = useState('');
-    const [controlAntropometrico, setControlAntropometrico] = useState('');
-    const [loadingMembers, setLoadingMembers] = useState(true);
-    const [error, setError] = useState('');
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState(null);
+  // --- ESTADOS ---
+  const [members, setMembers] = useState([]);
+  const [receipts, setReceipts] = useState([]);
+  const [deliveryEvents, setDeliveryEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-    // State for adding head of family
-    const [jefeDeFamiliaName, setJefeDeFamiliaName] = useState('');
-    const [jefeDeFamiliaCedula, setJefeDeFamiliaCedula] = useState('');
-    const [jefeFechaNacimiento, setJefeFechaNacimiento] = useState('');
-    const [jefeGender, setJefeGender] = useState('');
-    const [jefeEscolaridad, setJefeEscolaridad] = useState('');
-    const [jefeDiscapacidad, setJefeDiscapacidad] = useState(false);
-    const [jefeTipoDiscapacidad, setJefeTipoDiscapacidad] = useState('');
-    const [jefeEnfermedadCronica, setJefeEnfermedadCronica] = useState(false);
-    const [jefeTipoEnfermedad, setJefeTipoEnfermedad] = useState('');
-    const [jefeMedicinas, setJefeMedicinas] = useState('');
-    const [jefeControlAntropometrico, setJefeControlAntropometrico] = useState('');
-    const [direccion, setDireccion] = useState('');
-    const [telefonoContacto, setTelefonoContacto] = useState('');
+  // Estado unificado para formulario de miembro/jefe
+  const [formMode, setFormMode] = useState('add'); // 'add' | 'edit'
+  const [isHeadForm, setIsHeadForm] = useState(false);
+  const [formData, setFormData] = useState({
+    memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '',
+    discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '',
+    medicinas: '', controlAntropometrico: '', direccion: '', telefonoContacto: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
-    // States for benefits management
-    const [deliveryEvents, setDeliveryEvents] = useState([]);
-    const [selectedDeliveryEvent, setSelectedDeliveryEvent] = useState('');
-    const [receivedByMemberId, setReceivedByMemberId] = useState('');
-    const [benefitNotes, setBenefitNotes] = useState('');
-    const [receipts, setReceipts] = useState([]);
-    const [loadingReceipts, setLoadingReceipts] = useState(true);
-    const [currentReceipt, setCurrentReceipt] = useState(null);
-    const [allPossibleRecipients, setAllPossibleRecipients] = useState([]);
+  // Estado para beneficios
+  const [benefitForm, setBenefitForm] = useState({ selectedEvent: '', receivedBy: '', notes: '' });
+  const [benefitErrors, setBenefitErrors] = useState({});
 
-    useEffect(() => {
-        if (!db || !family?.id) {
-            setMembers([]);
-            setLoadingMembers(false);
-            return;
-        }
+  // --- EFECTOS (CARGA DE DATOS) ---
+  useEffect(() => {
+    if (!db || !family?.id) return;
+    setLoading(true);
 
-        setLoadingMembers(true);
-        setError('');
-
-        const membersCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members');
-        const q = query(membersCollectionRef, orderBy('isHead', 'desc'), orderBy('memberName', 'asc'));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const membersData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            const head = membersData.find(m => m.isHead);
-            setHeadOfFamily(head);
-            setMembers(membersData);
-            setAllPossibleRecipients(membersData);
-            setLoadingMembers(false);
-        }, (firestoreError) => {
-            setError("Error al cargar los miembros: " + firestoreError.message);
-            setLoadingMembers(false);
-        });
-
-        return () => unsubscribe();
-    }, [db, family?.id]);
-
-    useEffect(() => {
-        if (!db) return;
-
-        const fetchDeliveryEvents = async () => {
-            try {
-                const eventsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'deliveries');
-                const q = query(eventsCollectionRef, orderBy('eventDate', 'desc'));
-                const querySnapshot = await getDocs(q);
-                const eventsData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setDeliveryEvents(eventsData);
-            } catch (e) {
-                setError("Error al cargar los eventos de entrega disponibles.");
-            }
-        };
-        fetchDeliveryEvents();
-    }, [db]);
-
-    useEffect(() => {
-        if (!db || !family?.id) {
-            setReceipts([]);
-            setLoadingReceipts(false);
-            return;
-        }
-
-        setLoadingReceipts(true);
-        setError('');
-
-        const receiptsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts');
-        const q = query(receiptsCollectionRef, orderBy('receiptDate', 'desc'));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const receiptsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setReceipts(receiptsData);
-            setLoadingReceipts(false);
-        }, (firestoreError) => {
-            setError("Error al cargar los recibos: " + firestoreError.message);
-            setLoadingReceipts(false);
-        });
-
-        return () => unsubscribe();
-    }, [db, family?.id]);
-
-    const calculateAge = (dob) => {
-        if (!dob) return 'N/A';
-        const birthDate = new Date(dob);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age;
-    };
-
-    const calculateBagQuantity = (numBeneficiaries) => {
-        if (numBeneficiaries >= 1 && numBeneficiaries <= 5) return 1;
-        if (numBeneficiaries >= 6 && numBeneficiaries <= 11) return 2;
-        if (numBeneficiaries > 11) return 3;
-        return 0;
-    };
-
-    const handleAddHeadOfFamily = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!jefeDeFamiliaName || !jefeDeFamiliaCedula || !jefeFechaNacimiento || !jefeGender || !jefeEscolaridad || !direccion || !telefonoContacto) {
-            setError('Todos los campos del jefe de familia son obligatorios.');
-            return;
-        }
-
-        const headOfFamilyData = {
-            memberName: jefeDeFamiliaName,
-            memberCedula: jefeDeFamiliaCedula,
-            fechaNacimiento: jefeFechaNacimiento,
-            age: calculateAge(jefeFechaNacimiento),
-            memberGender: jefeGender,
-            escolaridad: jefeEscolaridad,
-            discapacidad: jefeDiscapacidad,
-            tipoDiscapacidad: jefeDiscapacidad ? jefeTipoDiscapacidad : '',
-            enfermedadCronica: jefeEnfermedadCronica,
-            tipoEnfermedad: jefeEnfermedadCronica ? jefeTipoEnfermedad : '',
-            medicinas: jefeEnfermedadCronica ? jefeMedicinas : '',
-            controlAntropometrico: jefeControlAntropometrico,
-            isHead: true,
-            familyId: family.id,
-            createdAt: Date.now(),
-            updatedAt: Date.now()
-        };
-
-        try {
-            const membersCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members');
-            await addDoc(membersCollectionRef, headOfFamilyData);
-
-            const familyDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id);
-            await updateDoc(familyDocRef, {
-                cedulaJefe: jefeDeFamiliaCedula,
-                direccion: direccion,
-                telefonoContacto: telefonoContacto
-            });
-
-        } catch (e) {
-            setError("Error al guardar el jefe de familia: " + e.message);
-        }
-    };
-
-    const handleSubmitMember = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!memberName || !fechaNacimiento || !escolaridad || !memberGender) {
-            setError('Nombre, Fecha de Nacimiento, Género y Escolaridad del miembro son obligatorios.');
-            return;
-        }
-
-        const memberData = {
-            memberName,
-            memberCedula,
-            fechaNacimiento,
-            age: calculateAge(fechaNacimiento),
-            memberGender,
-            discapacidad,
-            tipoDiscapacidad: discapacidad ? tipoDiscapacidad : '',
-            escolaridad,
-            enfermedadCronica,
-            tipoEnfermedad: enfermedadCronica ? tipoEnfermedad : '',
-            medicinas: enfermedadCronica ? medicinas : '',
-            controlAntropometrico,
-            isHead: false,
-            familyId: family.id,
-            updatedAt: Date.now()
-        };
-
-        try {
-            if (currentMember) {
-                const memberDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members', currentMember.id);
-                await updateDoc(memberDocRef, memberData);
-            } else {
-                await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members'), {
-                    ...memberData,
-                    createdAt: Date.now()
-                });
-            }
-            resetMemberForm();
-        } catch (e) {
-            setError("Error al guardar el miembro: " + e.message);
-        }
-    };
-
-    const handleEditMember = (member) => {
-        setCurrentMember(member);
-        setMemberName(member.memberName);
-        setMemberCedula(member.memberCedula);
-        setFechaNacimiento(member.fechaNacimiento);
-        setMemberGender(member.memberGender || '');
-        setDiscapacidad(member.discapacidad || false);
-        setTipoDiscapacidad(member.tipoDiscapacidad || '');
-        setEscolaridad(member.escolaridad || '');
-        setEnfermedadCronica(member.enfermedadCronica || false);
-        setTipoEnfermedad(member.tipoEnfermedad || '');
-        setMedicinas(member.medicinas || '');
-        setControlAntropometrico(member.controlAntropometrico || '');
-        setError('');
-    };
-
-    const handleDeleteClick = (item, type) => {
-        setItemToDelete({ ...item, type });
-        setShowConfirmModal(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
-        setError('');
-        try {
-            if (itemToDelete.type === 'member') {
-                const memberDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members', itemToDelete.id);
-                await deleteDoc(memberDocRef);
-
-                if (itemToDelete.isHead) {
-                    const familyDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id);
-                    await updateDoc(familyDocRef, {
-                        cedulaJefe: ''
-                    });
-                }
-            } else if (itemToDelete.type === 'receipt') {
-                const receiptDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts', itemToDelete.id);
-                await deleteDoc(receiptDocRef);
-            }
-
-            setShowConfirmModal(false);
-            setItemToDelete(null);
-        } catch (e) {
-            setError("Error al eliminar el item: " + e.message);
-        }
-    };
-
-    const cancelDelete = () => {
-        setShowConfirmModal(false);
-        setItemToDelete(null);
-    };
-
-    const resetMemberForm = () => {
-        setCurrentMember(null);
-        setMemberName('');
-        setMemberCedula('');
-        setFechaNacimiento('');
-        setMemberGender('');
-        setDiscapacidad(false);
-        setTipoDiscapacidad('');
-        setEscolaridad('');
-        setEnfermedadCronica(false);
-        setTipoEnfermedad('');
-        setMedicinas('');
-        setControlAntropometrico('');
-        setError('');
-    };
-
-    const handleSubmitBenefit = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!selectedDeliveryEvent || !receivedByMemberId) {
-            setError('Debes seleccionar un Evento de Entrega y quién recibió el beneficio.');
-            return;
-        }
-
-        const selectedEvent = deliveryEvents.find(event => event.id === selectedDeliveryEvent);
-        const selectedRecipient = allPossibleRecipients.find(rec => rec.id === receivedByMemberId);
-
-        if (!selectedEvent || !selectedRecipient) {
-            setError('Evento de Entrega o Receptor inválido.');
-            return;
-        }
-
-        const totalBeneficiaries = members.length;
-
-        const benefitData = {
-            deliveryEventId: selectedEvent.id,
-            eventName: selectedEvent.eventName,
-            eventDate: selectedEvent.eventDate,
-            eventType: selectedEvent.eventDescription,
-            beneficiariesCount: totalBeneficiaries,
-            bagQuantity: calculateBagQuantity(totalBeneficiaries),
-            receivedBy: {
-                id: selectedRecipient.id,
-                name: selectedRecipient.memberName,
-                cedula: selectedRecipient.memberCedula || 'N/A'
-            },
-            jefeDeFamiliaName: headOfFamily?.memberName || family.familyName,
-            notes: benefitNotes,
-            receiptDate: Date.now()
-        };
-
-        try {
-            if (currentReceipt) {
-                const receiptDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts', currentReceipt.id);
-                await updateDoc(receiptDocRef, benefitData);
-            } else {
-                await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts'), benefitData);
-            }
-            resetBenefitForm();
-        } catch (e) {
-            setError("Error al guardar el recibo: " + e.message);
-        }
-    };
-
-    const handleEditReceipt = (receipt) => {
-        setCurrentReceipt(receipt);
-        setSelectedDeliveryEvent(receipt.deliveryEventId);
-        setReceivedByMemberId(receipt.receivedBy.id);
-        setBenefitNotes(receipt.notes || '');
-        setError('');
-    };
-
-    const resetBenefitForm = () => {
-        setCurrentReceipt(null);
-        setSelectedDeliveryEvent('');
-        setReceivedByMemberId('');
-        setBenefitNotes('');
-        setError('');
-    };
-
-    if (loadingMembers) {
-        return <div className="text-center text-gray-600 p-4">Cargando miembros...</div>;
-    }
-
-    if (!headOfFamily) {
-        return (
-            <div className="space-y-8 p-4 bg-white rounded-xl shadow-lg">
-                <button
-                    onClick={onBack}
-                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-300 shadow-sm mb-6"
-                >
-                    &larr; Volver a Familias
-                </button>
-                <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-4">
-                    Añadir Jefe de Familia para: {family.familyName}
-                </h2>
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
-                <form onSubmit={handleAddHeadOfFamily} className="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-4 border border-indigo-200">
-                    <input
-                        type="text"
-                        placeholder="Nombre del Jefe de Familia"
-                        value={jefeDeFamiliaName}
-                        onChange={(e) => setJefeDeFamiliaName(e.target.value.toUpperCase())}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Cédula del Jefe de Familia"
-                        value={jefeDeFamiliaCedula}
-                        onChange={(e) => setJefeDeFamiliaCedula(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required
-                    />
-                     <input
-                    type="text"
-                    placeholder="Dirección Completa (Calle, Sector, Casa/Edificio)"
-                    value={direccion}
-                    onChange={(e) => setDireccion(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                     />
-                <input
-                    type="tel"
-                    placeholder="Teléfono de Contacto"
-                    value={telefonoContacto}
-                    onChange={(e) => setTelefonoContacto(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                />
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Fecha de Nacimiento del Jefe:
-                        <input
-                            type="date"
-                            value={jefeFechaNacimiento}
-                            onChange={(e) => setJefeFechaNacimiento(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                            required
-                        />
-                    </label>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Género del Jefe:
-                        <select
-                            value={jefeGender}
-                            onChange={(e) => setJefeGender(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                            required
-                        >
-                            <option value="">Selecciona Género</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </label>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Nivel de Escolaridad del Jefe:
-                        <select
-                            value={jefeEscolaridad}
-                            onChange={(e) => setJefeEscolaridad(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                            required
-                        >
-                            <option value="">Selecciona una opción</option>
-                            <option value="Ninguna">Ninguna</option>
-                            <option value="Preescolar">Preescolar</option>
-                            <option value="Primaria">Primaria</option>
-                            <option value="Secundaria">Secundaria</option>
-                            <option value="Diversificado">Diversificado</option>
-                            <option value="Universitaria">Universitaria</option>
-                            <option value="Técnica">Técnica</option>
-                        </select>
-                    </label>
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id="jefeDiscapacidad"
-                            checked={jefeDiscapacidad}
-                            onChange={(e) => setJefeDiscapacidad(e.target.checked)}
-                            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                        />
-                        <label htmlFor="jefeDiscapacidad" className="text-gray-700">¿El Jefe tiene Discapacidad?</label>
-                    </div>
-                    {jefeDiscapacidad && (
-                        <input
-                            type="text"
-                            placeholder="Tipo de Discapacidad del Jefe"
-                            value={jefeTipoDiscapacidad}
-                            onChange={(e) => setJefeTipoDiscapacidad(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required={jefeDiscapacidad}
-                        />
-                    )}
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id="jefeEnfermedadCronica"
-                            checked={jefeEnfermedadCronica}
-                            onChange={(e) => setJefeEnfermedadCronica(e.target.checked)}
-                            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                        />
-                        <label htmlFor="jefeEnfermedadCronica" className="text-gray-700">¿El Jefe tiene Enfermedad Crónica?</label>
-                    </div>
-                    {jefeEnfermedadCronica && (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="Tipo de Enfermedad Crónica del Jefe"
-                                value={jefeTipoEnfermedad}
-                                onChange={(e) => setJefeTipoEnfermedad(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                required={jefeEnfermedadCronica}
-                            />
-                            <textarea
-                                placeholder="Medicinas que toma el Jefe (separadas por coma)"
-                                value={jefeMedicinas}
-                                onChange={(e) => setJefeMedicinas(e.target.value)}
-                                rows="2"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                            ></textarea>
-                        </>
-                    )}
-                    <textarea
-                        placeholder="Control Antropométrico del Jefe (Tallas, Medidas - opcional)"
-                        value={jefeControlAntropometrico}
-                        onChange={(e) => setJefeControlAntropometrico(e.target.value)}
-                        rows="2"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                    ></textarea>
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md"
-                        >
-                            Guardar Jefe de Familia
-                        </button>
-                    </div>
-                </form>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-8 p-4 bg-white rounded-xl shadow-lg">
-            <button
-                onClick={onBack}
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-300 shadow-sm mb-6"
-            >
-                &larr; Volver a Familias
-            </button>
-
-            <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-4">
-                Miembros de la Familia de: {family.familyName}
-            </h2>
-
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
-                    <span className="block sm:inline">{error}</span>
-                </div>
-            )}
-
-            <div className="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-4 border border-indigo-200">
-                <h3 className="text-xl font-semibold text-indigo-600">
-                    {currentMember ? 'Editar Miembro' : 'Añadir Nuevo Miembro'}
-                </h3>
-                <input
-                    type="text"
-                    placeholder="Nombre Completo del Miembro"
-                    value={memberName}
-                    onChange={(e) => setMemberName(e.target.value.toUpperCase())}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="Cédula del Miembro"
-                    value={memberCedula}
-                    onChange={(e) => setMemberCedula(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Fecha de Nacimiento:
-                    <input
-                        type="date"
-                        value={fechaNacimiento}
-                        onChange={(e) => setFechaNacimiento(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                        required
-                    />
-                </label>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Género:
-                    <select
-                        value={memberGender}
-                        onChange={(e) => setMemberGender(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                        required
-                    >
-                        <option value="">Selecciona Género</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </label>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Nivel de Escolaridad:
-                    <select
-                        value={escolaridad}
-                        onChange={(e) => setEscolaridad(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                        required
-                    >
-                        <option value="">Selecciona una opción</option>
-                        <option value="Ninguna">Ninguna</option>
-                        <option value="Preescolar">Preescolar</option>
-                        <option value="Primaria">Primaria</option>
-                        <option value="Secundaria">Secundaria</option>
-                        <option value="Diversificado">Diversificado</option>
-                        <option value="Universitaria">Universitaria</option>
-                        <option value="Técnica">Técnica</option>
-                    </select>
-                </label>
-
-                <div className="flex items-center space-x-2">
-                    <input
-                        type="checkbox"
-                        id="discapacidad"
-                        checked={discapacidad}
-                        onChange={(e) => setDiscapacidad(e.target.checked)}
-                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    />
-                    <label htmlFor="discapacidad" className="text-gray-700">¿Tiene Discapacidad?</label>
-                </div>
-                {discapacidad && (
-                    <input
-                        type="text"
-                        placeholder="Tipo de Discapacidad"
-                        value={tipoDiscapacidad}
-                        onChange={(e) => setTipoDiscapacidad(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required={discapacidad}
-                    />
-                )}
-
-                <div className="flex items-center space-x-2">
-                    <input
-                        type="checkbox"
-                        id="enfermedadCronica"
-                        checked={enfermedadCronica}
-                        onChange={(e) => setEnfermedadCronica(e.target.checked)}
-                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    />
-                    <label htmlFor="enfermedadCronica" className="text-gray-700">¿Tiene Enfermedad Crónica?</label>
-                </div>
-                {enfermedadCronica && (
-                    <>
-                        <input
-                            type="text"
-                            placeholder="Tipo de Enfermedad Crónica"
-                            value={tipoEnfermedad}
-                            onChange={(e) => setTipoEnfermedad(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required={enfermedadCronica}
-                        />
-                        <textarea
-                            placeholder="Medicinas que toma (separadas por coma)"
-                            value={medicinas}
-                            onChange={(e) => setMedicinas(e.target.value)}
-                            rows="2"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                        ></textarea>
-                    </>
-                )}
-
-                <textarea
-                    placeholder="Control Antropométrico (Tallas, Medidas - opcional)"
-                    value={controlAntropometrico}
-                    onChange={(e) => setControlAntropometrico(e.target.value)}
-                    rows="2"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                ></textarea>
-
-                <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                    {currentMember && (
-                        <button
-                            type="button"
-                            onClick={resetMemberForm}
-                            className="w-full sm:w-auto bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition duration-300 shadow-md"
-                        >
-                            Cancelar Edición
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={handleSubmitMember}
-                        className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md"
-                    >
-                        {currentMember ? 'Actualizar Miembro' : 'Añadir Miembro'}
-                    </button>
-                </div>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold text-indigo-700 mt-8 text-center">
-                Miembros Registrados ({members.length} en total)
-            </h3>
-            {loadingMembers ? (
-                <div className="text-center text-gray-600 p-4">Cargando miembros...</div>
-            ) : members.length === 0 ? (
-                <div className="text-center text-gray-500 p-6 border border-dashed border-gray-300 rounded-lg bg-white">
-                    No hay miembros registrados para esta familia. ¡Usa el formulario de arriba para añadir uno!
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {members.map((member) => (
-                        <div key={member.id} className={`bg-white rounded-xl shadow-md p-5 space-y-2 border ${member.isHead ? 'border-indigo-500' : 'border-gray-200'}`}>
-                            <h4 className="text-lg font-semibold text-gray-900">{member.memberName} {member.isHead && <span className="text-indigo-600 font-bold">(Jefe de Familia)</span>}</h4>
-                            <p className="text-gray-700 text-sm">Cédula: {member.memberCedula || 'N/A'}</p>
-                            <p className="text-gray-700 text-sm">
-                                F. Nacimiento: {member.fechaNacimiento} (Edad: {member.age || 'N/A'})
-                            </p>
-                            <p className="text-gray-700 text-sm">Género: {member.memberGender || 'N/A'}</p>
-                            <p className="text-gray-700 text-sm">Escolaridad: {member.escolaridad}</p>
-                            {member.discapacidad && (
-                                <p className="text-red-600 text-sm font-medium">Discapacidad: {member.tipoDiscapacidad}</p>
-                            )}
-                            {member.enfermedadCronica && (
-                                <p className="text-orange-600 text-sm font-medium">Enfermedad Crónica: {member.tipoEnfermedad}</p>
-                            )}
-                            {member.medicinas && member.enfermedadCronica && (
-                                <p className="text-gray-600 text-sm italic">Medicinas: {member.medicinas}</p>
-                            )}
-                            {member.controlAntropometrico && (
-                                <p className="text-gray-600 text-sm italic">Antropometría: {member.controlAntropometrico}</p>
-                            )}
-                            <div className="flex justify-end gap-2 mt-4">
-                                <button
-                                    onClick={() => handleEditMember(member)}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 shadow-sm"
-                                >
-                                    Editar
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteClick(member, 'member')}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-sm"
-                                >
-                                    Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <div className="border-t border-indigo-200 pt-8 mt-8 space-y-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-indigo-700 text-center">
-                    Gestión de Beneficios
-                </h3>
-
-                <form onSubmit={handleSubmitBenefit} className="bg-green-50 p-6 rounded-xl shadow-inner space-y-4 border border-green-200">
-                    <h4 className="text-lg font-semibold text-green-600">Registrar Entrega de Beneficio</h4>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Evento de Entrega:
-                        <select
-                            value={selectedDeliveryEvent}
-                            onChange={(e) => setSelectedDeliveryEvent(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mt-1"
-                            required
-                        >
-                            <option value="">Selecciona un Evento</option>
-                            {deliveryEvents.map(event => (
-                                <option key={event.id} value={event.id}>
-                                    {event.eventName} ({event.eventDate})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <p className="text-gray-700 text-sm font-bold">
-                        Cantidad de Bolsas (calculada): <span className="font-normal text-lg">{calculateBagQuantity(members.length)}</span>
-                    </p>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Recibido por:
-                        <select
-                            value={receivedByMemberId}
-                            onChange={(e) => setReceivedByMemberId(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mt-1"
-                            required
-                        >
-                            <option value="">Selecciona un Miembro</option>
-                            {allPossibleRecipients.map(recipient => (
-                                <option key={recipient.id} value={recipient.id}>
-                                    {recipient.memberName} ({recipient.memberCedula || 'N/A'})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <textarea
-                        placeholder="Notas adicionales sobre la entrega (opcional)"
-                        value={benefitNotes}
-                        onChange={(e) => setBenefitNotes(e.target.value)}
-                        rows="2"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
-                    ></textarea>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                        {currentReceipt && (
-                            <button
-                                type="button"
-                                onClick={resetBenefitForm}
-                                className="w-full sm:w-auto bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition duration-300 shadow-md"
-                            >
-                                Cancelar Edición
-                            </button>
-                        )}
-                        <button
-                            type="submit"
-                            className="w-full sm:w-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300 shadow-md"
-                        >
-                            {currentReceipt ? 'Actualizar Recibo' : 'Registrar Recibo'}
-                        </button>
-                    </div>
-                </form>
-
-                <h4 className="text-lg sm:text-xl font-bold text-indigo-700 mt-8 text-center">
-                    Historial de Entregas de Beneficios
-                </h4>
-                {loadingReceipts ? (
-                    <div className="text-center text-gray-600 p-4">Cargando historial de entregas...</div>
-                ) : receipts.length === 0 ? (
-                    <div className="text-center text-gray-500 p-6 border border-dashed border-gray-300 rounded-lg bg-white">
-                        No hay entregas de beneficios registradas para esta familia.
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                        {receipts.map((receipt) => (
-                            <div key={receipt.id} className="bg-white rounded-xl shadow-md p-5 space-y-2 border border-green-200">
-                                <p className="text-lg font-semibold text-gray-900">
-                                    Evento: {receipt.eventName} ({receipt.eventDate})
-                                </p>
-                                <p className="text-gray-700 text-sm">Tipo: {receipt.eventType}</p>
-                                <p className="text-gray-700 text-sm">Bolsas Asignadas: {receipt.bagQuantity}</p>
-                                <p className="text-gray-700 text-sm">Recibido por: {receipt.receivedBy.name} (C.I: {receipt.receivedBy.cedula})</p>
-                                <p className="text-gray-700 text-sm font-medium">Jefe de Familia: {receipt.jefeDeFamiliaName}</p>
-                                {receipt.notes && <p className="text-gray-600 text-sm italic">Notas: {receipt.notes}</p>}
-                                <p className="text-gray-500 text-xs">Registrado el: {new Date(receipt.receiptDate).toLocaleDateString()}</p>
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        onClick={() => handleEditReceipt(receipt)}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 shadow-sm"
-                                    >
-                                        Editar
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteClick(receipt, 'receipt')}
-                                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-sm"
-                                    >
-                                        Eliminar
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center space-y-4">
-                        <h3 className="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
-                        <p className="text-gray-600">
-                            ¿Estás seguro de que quieres eliminar este item? Esta acción no se puede deshacer.
-                        </p>
-                        <div className="flex justify-center gap-4">
-                            <button
-                                onClick={cancelDelete}
-                                className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition duration-300"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition duration-300"
-                            >
-                                Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+    const unsubMembers = onSnapshot(
+      query(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members'), orderBy('isHead', 'desc'), orderBy('memberName', 'asc')),
+      (snap) => {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setMembers(data);
+        setLoading(false);
+      },
+      (err) => setError('Error cargando miembros: ' + err.message)
     );
+
+    const unsubReceipts = onSnapshot(
+      query(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts'), orderBy('receiptDate', 'desc')),
+      (snap) => setReceipts(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      (err) => setError('Error cargando recibos: ' + err.message)
+    );
+
+    getDocs(query(collection(db, COLLECTION, DATA_DOCUMENT, 'deliveries'), orderBy('eventDate', 'desc')))
+      .then(snap => setDeliveryEvents(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+      .catch(() => setError('No se pudieron cargar los eventos de entrega.'));
+
+    return () => { unsubMembers(); unsubReceipts(); };
+  }, [db, family?.id]);
+
+  // --- UTILIDADES ---
+  const calculateAge = (dob) => {
+    if (!dob) return 'N/A';
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
+  const calculateBags = (count) => {
+    if (count <= 5) return 1;
+    if (count <= 11) return 2;
+    return 3;
+  };
+
+  // --- VALIDACIÓN DEL FORMULARIO ---
+  const validateField = useCallback((field, value) => {
+    let err = '';
+    if (['memberName', 'direccion'].includes(field) && !VALIDATORS.name(value)) err = 'Solo letras y espacios permitidos';
+    if (field === 'memberCedula' && value && !VALIDATORS.cedula(value).isValid) err = 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+    if (field === 'fechaNacimiento') {
+      const res = VALIDATORS.date(value);
+      if (!res.isValid) err = res.error;
+    }
+    if (field === 'telefonoContacto' && value && !VALIDATORS.phone(value).isValid) err = 'Teléfono inválido (ej: 0412-1234567)';
+    if (['memberName', 'fechaNacimiento', 'memberGender', 'escolaridad'].includes(field) && !value?.trim()) err = 'Campo requerido';
+    if (isHeadForm && ['direccion', 'telefonoContacto'].includes(field) && !value?.trim()) err = 'Campo requerido';
+    return err;
+  }, [isHeadForm]);
+
+  const handleFormChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (touched[field]) setFormErrors(prev => ({ ...prev, [field]: validateField(field, value) }));
+  };
+
+  const handleFormBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    setFormErrors(prev => ({ ...prev, [field]: validateField(field, formData[field]) }));
+  };
+
+  const validateAll = () => {
+    const requiredFields = ['memberName', 'fechaNacimiento', 'memberGender', 'escolaridad'];
+    if (isHeadForm) requiredFields.push('direccion', 'telefonoContacto');
+    
+    const newErrors = {};
+    let isValid = true;
+    requiredFields.forEach(f => {
+      const err = validateField(f, formData[f]);
+      if (err) { newErrors[f] = err; isValid = false; }
+    });
+    if (formData.memberCedula && !VALIDATORS.cedula(formData.memberCedula).isValid) {
+      newErrors.memberCedula = 'Cédula inválida'; isValid = false;
+    }
+    setFormErrors(newErrors);
+    return isValid;
+  };
+
+  // --- HANDLERS ---
+  const openHeadForm = () => {
+    setIsHeadForm(true); setFormMode('add'); setFormData({ ...formData, memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '', direccion: '', telefonoContacto: '' });
+    setFormErrors({}); setTouched({});
+  };
+
+  const openMemberForm = (member = null) => {
+    setIsHeadForm(false);
+    if (member) {
+      setFormMode('edit');
+      setFormData({ ...member, discapacidad: !!member.discapacidad, enfermedadCronica: !!member.enfermedadCronica });
+    } else {
+      setFormMode('add');
+      setFormData({ memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '', discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '', medicinas: '', controlAntropometrico: '' });
+    }
+    setFormErrors({}); setTouched({});
+  };
+
+  const handleSubmitMember = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!validateAll()) return;
+
+    const { formatted } = VALIDATORS.cedula(formData.memberCedula);
+    const data = {
+      memberName: formData.memberName.trim(),
+      memberCedula: formatted,
+      fechaNacimiento: formData.fechaNacimiento,
+      age: calculateAge(formData.fechaNacimiento),
+      memberGender: formData.memberGender,
+      escolaridad: formData.escolaridad,
+      discapacidad: formData.discapacidad,
+      tipoDiscapacidad: formData.discapacidad ? formData.tipoDiscapacidad : '',
+      enfermedadCronica: formData.enfermedadCronica,
+      tipoEnfermedad: formData.enfermedadCronica ? formData.tipoEnfermedad : '',
+      medicinas: formData.enfermedadCronica ? formData.medicinas : '',
+      controlAntropometrico: formData.controlAntropometrico,
+      isHead: isHeadForm,
+      familyId: family.id,
+      updatedAt: Date.now()
+    };
+
+    try {
+      setLoading(true);
+      if (formMode === 'edit') {
+        await updateDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members', formData.id), data);
+      } else {
+        await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members'), { ...data, createdAt: Date.now() });
+        if (isHeadForm) {
+          await updateDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id), {
+            cedulaJefe: formatted, direccion: formData.direccion, telefonoContacto: formData.telefonoContacto
+          });
+        }
+      }
+      openMemberForm(); // Reset
+    } catch (err) {
+      setError('Error guardando: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      if (itemToDelete.type === 'member') {
+        await deleteDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members', itemToDelete.id));
+        if (itemToDelete.isHead) await updateDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id), { cedulaJefe: '' });
+      } else {
+        await deleteDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts', itemToDelete.id));
+      }
+    } catch (err) { setError('Error eliminando: ' + err.message); }
+    setShowConfirm(false); setItemToDelete(null);
+  };
+
+  const handleSubmitBenefit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const errs = {};
+    if (!benefitForm.selectedEvent) errs.selectedEvent = 'Requerido';
+    if (!benefitForm.receivedBy) errs.receivedBy = 'Requerido';
+    setBenefitErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    const event = deliveryEvents.find(ev => ev.id === benefitForm.selectedEvent);
+    const recipient = members.find(m => m.id === benefitForm.receivedBy);
+    if (!event || !recipient) return setError('Datos inválidos.');
+
+    const data = {
+      deliveryEventId: event.id, eventName: event.eventName, eventDate: event.eventDate,
+      eventType: event.eventDescription, beneficiariesCount: members.length,
+      bagQuantity: calculateBags(members.length),
+      receivedBy: { id: recipient.id, name: recipient.memberName, cedula: recipient.memberCedula || 'N/A' },
+      jefeDeFamiliaName: members.find(m => m.isHead)?.memberName || family.familyName,
+      notes: benefitForm.notes, receiptDate: Date.now()
+    };
+
+    try {
+      setLoading(true);
+      await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts'), data);
+      setBenefitForm({ selectedEvent: '', receivedBy: '', notes: '' });
+    } catch (err) { setError('Error registrando beneficio: ' + err.message); }
+    finally { setLoading(false); }
+  };
+
+  // --- RENDER ---
+  const headExists = members.some(m => m.isHead);
+  if (loading && members.length === 0) return <div className="text-center p-8">Cargando datos de la familia...</div>;
+
+  return (
+    <div className="space-y-8 p-4 bg-white rounded-xl shadow-lg max-w-5xl mx-auto">
+      <button onClick={onBack} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition mb-4">← Volver</button>
+      <h2 className="text-2xl font-bold text-indigo-700 text-center">Miembros: {family.familyName}</h2>
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">{error}</div>}
+
+      {/* 📝 FORMULARIO UNIFICADO (JEFE O MIEMBRO) */}
+      <form onSubmit={handleSubmitMember} className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 space-y-4">
+        <h3 className="text-xl font-semibold text-indigo-700">{isHeadForm ? '👑 Registrar Jefe de Familia' : formMode === 'edit' ? '✏️ Editar Miembro' : '➕ Nuevo Miembro'}</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput label="Nombre Completo" value={formData.memberName} onChange={v => handleFormChange('memberName', v.toUpperCase())} onBlur={() => handleFormBlur('memberName')} error={formErrors.memberName} required placeholder="EJ: MARÍA PÉREZ" />
+          <FormInput label="Cédula" value={formData.memberCedula} onChange={v => handleFormChange('memberCedula', v)} onBlur={() => handleFormBlur('memberCedula')} error={formErrors.memberCedula} placeholder="V-12345678" />
+        </div>
+
+        {isHeadForm && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput label="Dirección" value={formData.direccion} onChange={v => handleFormChange('direccion', v)} onBlur={() => handleFormBlur('direccion')} error={formErrors.direccion} required placeholder="Calle, Sector, Casa" />
+            <FormInput label="Teléfono" value={formData.telefonoContacto} onChange={v => handleFormChange('telefonoContacto', v)} onBlur={() => handleFormBlur('telefonoContacto')} error={formErrors.telefonoContacto} required placeholder="0412-1234567" />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormInput label="Fecha Nacimiento" type="date" value={formData.fechaNacimiento} onChange={v => handleFormChange('fechaNacimiento', v)} onBlur={() => handleFormBlur('fechaNacimiento')} error={formErrors.fechaNacimiento} required />
+          <FormSelect label="Género" value={formData.memberGender} onChange={v => handleFormChange('memberGender', v)} options={['Masculino', 'Femenino', 'Otro']} required />
+          <FormSelect label="Escolaridad" value={formData.escolaridad} onChange={v => handleFormChange('escolaridad', v)} options={['Ninguna', 'Preescolar', 'Primaria', 'Secundaria', 'Diversificado', 'Universitaria', 'Técnica']} required />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={formData.discapacidad} onChange={e => handleFormChange('discapacidad', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
+            <span>¿Tiene discapacidad?</span>
+          </label>
+          {formData.discapacidad && <FormInput label="Tipo de discapacidad" value={formData.tipoDiscapacidad} onChange={v => handleFormChange('tipoDiscapacidad', v)} />}
+          
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={formData.enfermedadCronica} onChange={e => handleFormChange('enfermedadCronica', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
+            <span>¿Enfermedad crónica?</span>
+          </label>
+          {formData.enfermedadCronica && (
+            <>
+              <FormInput label="Tipo de enfermedad" value={formData.tipoEnfermedad} onChange={v => handleFormChange('tipoEnfermedad', v)} />
+              <FormInput label="Medicinas" value={formData.medicinas} onChange={v => handleFormChange('medicinas', v)} />
+            </>
+          )}
+        </div>
+
+        <FormInput label="Control Antropométrico" value={formData.controlAntropometrico} onChange={v => handleFormChange('controlAntropometrico', v)} />
+
+        <div className="flex justify-end gap-3 pt-2">
+          {(formMode === 'edit' || isHeadForm) && <button type="button" onClick={() => { setIsHeadForm(false); setFormMode('add'); setFormErrors({}); }} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancelar</button>}
+          <button type="submit" disabled={loading} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+            {loading ? 'Guardando...' : isHeadForm ? 'Guardar Jefe' : formMode === 'edit' ? 'Actualizar' : 'Añadir Miembro'}
+          </button>
+        </div>
+      </form>
+
+      {/* 👥 LISTA DE MIEMBROS */}
+      {!headExists ? (
+        <div className="text-center p-6 border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50">
+          <p className="text-indigo-700 font-medium">️ Esta familia aún no tiene Jefe registrado.</p>
+          <button onClick={openHeadForm} className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"> Registrar Jefe de Familia</button>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-gray-800">Miembros Registrados ({members.length})</h3>
+            <button onClick={() => openMemberForm()} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">+ Añadir Miembro</button>
+          </div>
+          {members.length === 0 ? <p className="text-gray-500 text-center py-4">No hay miembros aún.</p> : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {members.map(m => <MemberCard key={m.id} member={m} onEdit={openMemberForm} onDelete={(item) => { setItemToDelete({ ...item, type: 'member' }); setShowConfirm(true); }} />)}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 📦 BENEFICIOS */}
+      {headExists && (
+        <div className="border-t pt-8 space-y-6">
+          <h3 className="text-xl font-bold text-green-700 text-center">📦 Gestión de Beneficios</h3>
+          <form onSubmit={handleSubmitBenefit} className="bg-green-50 p-6 rounded-xl border border-green-200 space-y-4">
+            <FormSelect label="Evento de Entrega" value={benefitForm.selectedEvent} onChange={v => setBenefitForm(p => ({ ...p, selectedEvent: v }))} options={deliveryEvents.map(e => ({ value: e.id, label: `${e.eventName} (${e.eventDate})` }))} error={benefitErrors.selectedEvent} required />
+            <p className="text-sm text-gray-600">📦 Bolsas asignadas automáticamente: <strong>{calculateBags(members.length)}</strong></p>
+            <FormSelect label="Recibido por" value={benefitForm.receivedBy} onChange={v => setBenefitForm(p => ({ ...p, receivedBy: v }))} options={members.map(m => ({ value: m.id, label: m.memberName }))} error={benefitErrors.receivedBy} required />
+            <FormInput label="Notas (opcional)" value={benefitForm.notes} onChange={v => setBenefitForm(p => ({ ...p, notes: v }))} />
+            <div className="flex justify-end">
+              <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Registrar Entrega</button>
+            </div>
+          </form>
+
+          <h4 className="text-lg font-bold text-gray-800">Historial de Entregas</h4>
+          {receipts.length === 0 ? <p className="text-gray-500 text-center py-4">Sin entregas registradas.</p> : (
+            <div className="space-y-4">{receipts.map(r => <ReceiptCard key={r.id} receipt={r} onEdit={() => {}} onDelete={(item) => { setItemToDelete({ ...item, type: 'receipt' }); setShowConfirm(true); }} />)}</div>
+          )}
+        </div>
+      )}
+
+      {/* 🗑️ MODAL DE CONFIRMACIÓN */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm text-center space-y-4 shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-800">¿Eliminar este registro?</h3>
+            <p className="text-gray-600">Esta acción no se puede deshacer.</p>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => setShowConfirm(false)} className="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancelar</button>
+              <button onClick={handleDelete} className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default MemberManagement;

@@ -1,469 +1,594 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// src/components/Reports.js
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useReportData } from '../hooks/useReportData';
+import { generatePDF } from '../utils/pdfGenerator';
 import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
-import jsPDF from 'jspdf';
-
-import html2canvas from 'html2canvas';
+import logo from '../assets/logo-cc-la-barranca.png';
 
 const Reports = ({ db, userId }) => {
-    const [loadingReports, setLoadingReports] = useState(false);
-    const [error, setError] = useState('');
-    const reportsRef = useRef();
+  // --- REPORTES GENERALES ---
+  const { reportData, loading: reportsLoading, error: reportsError, refetch } = useReportData(db);
+  const reportsRef = useRef(null);
+  const generalPdfRef = useRef(null);
+  
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    totalFamilies: true,
+    totalCommunityPopulation: true,
+    disabilityCount: true,
+    chronicIllnessCount: true,
+    ageDistribution: true,
+    anthropometricCount: true,
+  });
 
-    const [totalFamilies, setTotalFamilies] = useState(0);
-    const [totalCommunityPopulation, setTotalCommunityPopulation] = useState(0);
-    const [genderDistribution, setGenderDistribution] = useState({ Masculino: 0, Femenino: 0, Otro: 0, 'N/A': 0 });
-    const [ageDistribution, setAgeDistribution] = useState({});
-    const [disabilityCount, setDisabilityCount] = useState(0);
-    const [chronicIllnessCount, setChronicIllnessCount] = useState(0);
-    const [membersWithAnthropometricData, setMembersWithAnthropometricData] = useState(0);
+  // --- CONSTANCIAS DE ENTREGA ---
+  const [deliveryEvents, setDeliveryEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [certificateData, setCertificateData] = useState({ received: [], notReceived: [] });
+  const [certLoading, setCertLoading] = useState(false);
 
-    const [deliveryEvents, setDeliveryEvents] = useState([]);
-    const [selectedEventId, setSelectedEventId] = useState('');
-    const [familiesReceived, setFamiliesReceived] = useState([]);
-    const [familiesNotReceived, setFamiliesNotReceived] = useState([]);
-    const [loading, setLoading] = useState(false);
+  // --- REPORTE INDIVIDUAL POR FAMILIA ---
+  const [selectedFamilyId, setSelectedFamilyId] = useState('');
+  const [familyReportData, setFamilyReportData] = useState({ members: [], receipts: [] });
+  const [loadingFamily, setLoadingFamily] = useState(false);
+  const familyReportRef = useRef(null);
 
-    const [showFilters, setShowFilters] = useState(false);
-    const [reportFilters, setReportFilters] = useState({
-        totalFamilies: true,
-        totalCommunityPopulation: true,
-        disabilityCount: true,
-        chronicIllnessCount: true,
-        ageDistribution: true,
-        membersWithAnthropometricData: true,
-    });
+  // Cargar eventos de entrega
+  const fetchDeliveryEvents = useCallback(async () => {
+    if (!db) return;
+    setCertLoading(true);
+    try {
+      const eventsRef = collection(db, COLLECTION, DATA_DOCUMENT, 'deliveries');
+      const q = query(eventsRef, orderBy('eventDate', 'desc'));
+      const snap = await getDocs(q);
+      setDeliveryEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error('Error cargando eventos:', err);
+    } finally {
+      setCertLoading(false);
+    }
+  }, [db]);
 
-    const fetchReportData = useCallback(async () => {
-        setLoadingReports(true);
-        setError('');
-        console.log("Fetching report data...");
-        try {
-            const familiesCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families');
-            const familiesSnapshot = await getDocs(familiesCollectionRef);
-            const familiesData = familiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // Cargar datos específicos de la familia seleccionada
+  useEffect(() => {
+    const fetchFamilyDetails = async () => {
+      if (!selectedFamilyId || !db) {
+        setFamilyReportData({ members: [], receipts: [] });
+        return;
+      }
+      setLoadingFamily(true);
+      try {
+        const membersRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', selectedFamilyId, 'members');
+        const membersSnap = await getDocs(query(membersRef, orderBy('isHead', 'desc')));
+        const members = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-            setTotalFamilies(familiesData.length);
+        const receiptsRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', selectedFamilyId, 'receipts');
+        const receiptsSnap = await getDocs(query(receiptsRef, orderBy('receiptDate', 'desc')));
+        const receipts = receiptsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-            let totalPopulation = 0;
-            let maleCount = 0;
-            let femaleCount = 0;
-            let otherGenderCount = 0;
-            let naGenderCount = 0;
-            let ageGroups = {
-                '0-5 años': 0, '6-12 años': 0, '13-17 años': 0, '18-25 años': 0, '26-40 años': 0, '41-60 años': 0, '60+ años': 0
-            };
-            let disabilityCounter = 0;
-            let chronicIllnessCounter = 0;
-            let anthropometricDataCounter = 0;
-
-            const allMembersPromises = familiesData.map(async (family) => {
-                const membersCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members');
-                const membersSnapshot = await getDocs(membersCollectionRef);
-                return membersSnapshot.docs.map(doc => doc.data());
-            });
-
-            const allMembersArrays = await Promise.all(allMembersPromises);
-            const allMembers = allMembersArrays.flat(); // Flatten the array of arrays into a single array of all members
-
-            totalPopulation = allMembers.length;
-
-            allMembers.forEach(member => {
-                const memberGender = member.memberGender; // Corrected field name
-                if (memberGender === 'Masculino') maleCount++;
-                else if (memberGender === 'Femenino') femaleCount++;
-                else if (memberGender === 'Otro') otherGenderCount++;
-                else naGenderCount++;
-
-                if (member.age !== undefined && member.age !== null && !isNaN(member.age)) { // Check for undefined/null age
-                    const age = parseInt(member.age);
-                    if (age >= 0 && age <= 5) ageGroups['0-5 años']++;
-                    else if (age >= 6 && age <= 12) ageGroups['6-12 años']++;
-                    else if (age >= 13 && age <= 17) ageGroups['13-17 años']++;
-                    else if (age >= 18 && age <= 25) ageGroups['18-25 años']++;
-                    else if (age >= 26 && age <= 40) ageGroups['26-40 años']++;
-                    else if (age >= 41 && age <= 60) ageGroups['41-60 años']++;
-                    else if (age > 60) ageGroups['60+ años']++;
-                }
-
-                if (member.discapacidad) { // Corrected field name
-                    disabilityCounter++;
-                }
-
-                if (member.enfermedadCronica) { // Corrected field name
-                    chronicIllnessCounter++;
-                }
-
-                if (member.controlAntropometrico) { // Corrected field name
-                    anthropometricDataCounter++;
-                }
-            });
-
-            setTotalCommunityPopulation(totalPopulation);
-            setGenderDistribution({ Masculino: maleCount, Femenino: femaleCount, Otro: otherGenderCount, 'N/A': naGenderCount });
-            setAgeDistribution(ageGroups);
-            setDisabilityCount(disabilityCounter);
-            setChronicIllnessCount(chronicIllnessCounter);
-            setMembersWithAnthropometricData(anthropometricDataCounter);
-
-        } catch (e) {
-            console.error("Error fetching report data:", e);
-            setError("Error al generar los reportes: " + e.message);
-        } finally {
-            setLoadingReports(false);
-        }
-    }, [db]);
-
-    const handleDownloadPDF = () => {
-        const input = reportsRef.current;
-        html2canvas(input)
-            .then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF();
-                const imgWidth = 210;
-                const pageHeight = 295;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-                pdf.save("reportes-clap.pdf");
-            });
+        setFamilyReportData({ members, receipts });
+      } catch (err) {
+        console.error('Error cargando detalles de familia:', err);
+      } finally {
+        setLoadingFamily(false);
+      }
     };
+    fetchFamilyDetails();
+  }, [selectedFamilyId, db]);
 
-    useEffect(() => {
-        if (db) {
-            fetchReportData();
-        }
-    }, [db, fetchReportData]);
+  // Generar constancia
+  const generateCertificate = useCallback(async () => {
+    if (!selectedEventId || !db) return;
+    setCertLoading(true);
+    try {
+      const eventRef = doc(db, COLLECTION, DATA_DOCUMENT, 'deliveries', selectedEventId);
+      const eventSnap = await getDoc(eventRef);
+      if (!eventSnap.exists()) throw new Error('Evento no encontrado');
+      
+      const event = eventSnap.data();
+      const deliveredIds = new Set(event.deliveredTo || []);
+      const families = reportData?.familiesList || [];
+      
+      const received = [];
+      const notReceived = [];
+      
+      for (const family of families) {
+        const membersRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members');
+        const membersSnap = await getDocs(membersRef);
+        const hasReceived = membersSnap.docs.some(d => deliveredIds.has(d.id));
+        (hasReceived ? received : notReceived).push(family);
+      }
+      setCertificateData({ received, notReceived });
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setCertLoading(false);
+    }
+  }, [db, selectedEventId, reportData?.familiesList]);
 
-    // 2. Generar la constancia cuando se selecciona un evento
-    const generateCertificate = async () => {
-        if (!selectedEventId) {
-            setError("Por favor, selecciona un evento de entrega para generar la constancia.");
-            return;
-        }
+  // Handlers de PDF
+  const handleDownloadGeneralPDF = useCallback(async () => {
+    try {
+      await generatePDF(generalPdfRef, 'reporte-general-clap.pdf');
+    } catch {
+      alert('❌ Error al generar el PDF general');
+    }
+  }, []);
 
-        setLoading(true);
-        setError('');
-        setFamiliesReceived([]);
-        setFamiliesNotReceived([]);
+  const handleDownloadFamilyPDF = useCallback(async () => {
+    if (!selectedFamilyId) return;
+    const family = reportData?.familiesList?.find(f => f.id === selectedFamilyId);
+    const fileName = `reporte-familiar-${family?.familyName?.replace(/\s+/g, '-').toLowerCase() || 'familia'}.pdf`;
+    try {
+      await generatePDF(familyReportRef, fileName);
+    } catch {
+      alert('❌ Error al generar el PDF familiar');
+    }
+  }, [selectedFamilyId, reportData?.familiesList]);
 
-        try {
-            // 1. Fetch the selected delivery event
-            const eventDocRef = doc(db, COLLECTION, DATA_DOCUMENT, 'deliveries', selectedEventId);
-            const eventDocSnap = await getDoc(eventDocRef);
+  const toggleFilter = useCallback((filter) => {
+    setActiveFilters(prev => ({ ...prev, [filter]: !prev[filter] }));
+  }, []);
 
-            if (!eventDocSnap.exists()) {
-                setError("Evento de entrega no encontrado.");
-                setLoading(false);
-                return;
-            }
+  useEffect(() => { fetchDeliveryEvents(); }, [fetchDeliveryEvents]);
 
-            const deliveryEvent = eventDocSnap.data();
-            const deliveredMemberIds = new Set(deliveryEvent.deliveredTo || []);
+  const filterLabels = {
+    totalFamilies: 'Total de Familias',
+    totalCommunityPopulation: 'Población Total',
+    disabilityCount: 'Discapacidad',
+    chronicIllnessCount: 'Enfermedades Crónicas',
+    ageDistribution: 'Distribución por Edad',
+    anthropometricCount: 'Control Antropométrico',
+  };
 
-            // 2. Fetch all families
-            const familiesSnapshot = await getDocs(collection(db, COLLECTION, DATA_DOCUMENT, 'families'));
-            const allFamilies = familiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            const familiesThatReceived = [];
-            const familiesThatDidNotReceive = [];
-
-            for (const family of allFamilies) {
-                // Check if any member of this family received the benefit
-                const receivedForThisEvent = family.members && family.members.some(member => deliveredMemberIds.has(member.id));
-
-                if (receivedForThisEvent) {
-                    familiesThatReceived.push(family);
-                } else {
-                    familiesThatDidNotReceive.push(family);
-                }
-            }
-
-            setFamiliesReceived(familiesThatReceived);
-            setFamiliesNotReceived(familiesThatDidNotReceive);
-
-        } catch (e) {
-            console.error("Error generating certificate:", e);
-            setError("Error al generar la constancia: " + e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const selectedEvent = deliveryEvents.find(event => event.id === selectedEventId);
-
-    const filterLabels = {
-        totalFamilies: 'Total de Familias',
-        totalCommunityPopulation: 'Población Total de la Comunidad',
-        disabilityCount: 'Personas con Discapacidad',
-        chronicIllnessCount: 'Personas con Enfermedades Crónicas',
-        ageDistribution: 'Distribución por Edades',
-        membersWithAnthropometricData: 'Miembros con Control Antropométrico',
-    };
-
-    // 1. Cargar todos los eventos de entrega disponibles
-    useEffect(() => {
-        const fetchDeliveryEvents = async () => {
-            if (!db) return;
-            setLoading(true);
-            setError('');
-            try {
-                const eventsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'deliveries');
-                const q = query(eventsCollectionRef, orderBy('eventDate', 'desc'));
-                const querySnapshot = await getDocs(q);
-                const eventsData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setDeliveryEvents(eventsData);
-            } catch (e) {
-                console.error("Error fetching delivery events:", e);
-                setError("Error al cargar los eventos de entrega disponibles.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDeliveryEvents();
-    }, [db]);
-
+  if (reportsLoading) {
     return (
-        <div className="space-y-8 p-4 bg-white rounded-xl shadow-lg">
-            <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-6">
-                Reportes del Sistema CLAP
-            </h2>
-
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
-                    <span className="block sm:inline">{error}</span>
-                </div>
-            )}
-
-            <div className="flex justify-center mb-6 gap-4">
-                <button
-                    onClick={fetchReportData}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md flex items-center"
-                    disabled={loadingReports}
-                >
-                    {loadingReports ? (
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    ) : (
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5m0 0h5m-5 0l6-6m-4 10v5m0 0h5m-5 0l6-6m-4 10v5m0 0h5m-5 0l6-6"></path></svg>
-                    )}
-                    Generar Reportes
-                </button>
-                <button
-                    onClick={handleDownloadPDF}
-                    className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300 shadow-md flex items-center"
-                >
-                    Descargar como PDF
-                </button>
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md flex items-center"
-                >
-                    Filtrar
-                </button>
-            </div>
-
-            {showFilters && (
-                <div className="bg-gray-50 p-4 rounded-lg shadow-inner mb-6">
-                    <h4 className="text-lg font-semibold mb-2">Filtrar Reportes</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Object.keys(reportFilters).map((filter) => (
-                            <label key={filter} className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={reportFilters[filter]}
-                                    onChange={() =>
-                                        setReportFilters((prev) => ({
-                                            ...prev,
-                                            [filter]: !prev[filter],
-                                        }))
-                                    }
-                                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                                />
-                                <span>{filterLabels[filter]}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {loadingReports ? (
-                <div className="text-center text-gray-600 p-6">Generando reportes, por favor espera...</div>
-            ) : (
-                <div ref={reportsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {reportFilters.totalFamilies && (
-                        <div className="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
-                            <h4 className="text-xl font-semibold text-blue-800 mb-2">Total de Familias</h4>
-                            <p className="text-4xl font-bold text-blue-600">{totalFamilies}</p>
-                        </div>
-                    )}
-
-                    {reportFilters.totalCommunityPopulation && (
-                        <div className="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
-                            <h4 className="text-xl font-semibold text-green-800 mb-2">Población Total de la Comunidad</h4>
-                            <p className="text-4xl font-bold text-green-600">{totalCommunityPopulation}</p>
-                            <h5 className="text-lg font-semibold text-green-700 mt-3">Distribución por Género:</h5>
-                            <ul className="list-disc list-inside text-gray-700">
-                                <li>Masculino: <span className="font-bold">{genderDistribution.Masculino}</span></li>
-                                <li>Femenino: <span className="font-bold">{genderDistribution.Femenino}</span></li>
-                                {genderDistribution.Otro > 0 && <li>Otro: <span className="font-bold">{genderDistribution.Otro}</span></li>}
-                                {genderDistribution['N/A'] > 0 && <li>No especificado: <span className="font-bold">{genderDistribution['N/A']}</span></li>}
-                            </ul>
-                        </div>
-                    )}
-
-                    {reportFilters.disabilityCount && (
-                        <div className="bg-yellow-50 p-6 rounded-xl shadow-md border border-yellow-200">
-                            <h4 className="text-xl font-semibold text-yellow-800 mb-2">Personas con Discapacidad</h4>
-                            <p className="text-4xl font-bold text-yellow-600">{disabilityCount}</p>
-                        </div>
-                    )}
-
-                    {reportFilters.chronicIllnessCount && (
-                        <div className="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
-                            <h4 className="text-xl font-semibold text-red-800 mb-2">Personas con Enfermedades Crónicas</h4>
-                            <p className="text-4xl font-bold text-red-600">{chronicIllnessCount}</p>
-                        </div>
-                    )}
-
-                    {reportFilters.ageDistribution && (
-                        <div className="bg-purple-50 p-6 rounded-xl shadow-md border border-purple-200 col-span-1 md:col-span-2 lg:col-span-1">
-                            <h4 className="text-xl font-semibold text-purple-800 mb-2">Distribución por Edades</h4>
-                            <ul className="list-disc list-inside text-gray-700">
-                                {Object.entries(ageDistribution).map(([range, count]) => (
-                                    <li key={range}>{range}: <span className="font-bold">{count}</span></li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {reportFilters.membersWithAnthropometricData && (
-                        <div className="bg-orange-50 p-6 rounded-xl shadow-md border border-orange-200 col-span-1 md:col-span-2 lg:col-span-1">
-                            <h4 className="text-xl font-semibold text-orange-800 mb-2">Miembros con Control Antropométrico</h4>
-                            <p className="text-4xl font-bold text-orange-600">{membersWithAnthropometricData}</p>
-                            <p className="text-sm text-gray-600">
-                                (Incluye Jefes de Familia y Miembros con datos en el campo "Control Antropométrico")
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <div className="space-y-8 p-4 bg-white rounded-xl shadow-lg">
-                <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-6">
-                    Generar Reporte de Entrega de Beneficio
-                </h2>
-
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
-
-                <div className="bg-indigo-50 p-6 rounded-xl shadow-inner space-y-4 border border-indigo-200">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Selecciona un Evento de Entrega:
-                        <select
-                            value={selectedEventId}
-                            onChange={(e) => setSelectedEventId(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
-                            disabled={loading}
-                        >
-                            <option value="">-- Selecciona un Evento --</option>
-                            {deliveryEvents.map(event => (
-                                <option key={event.id} value={event.id}>
-                                    {event.eventName} ({event.eventDate})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <button
-                        onClick={generateCertificate}
-                        className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md flex items-center justify-center"
-                        disabled={loading || !selectedEventId}
-                    >
-                        {loading ? (
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        ) : (
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        )}
-                        Generar Constancia
-                    </button>
-                </div>
-
-                {/* Sección de la Constancia generada */}
-                {selectedEvent && (familiesReceived.length > 0 || familiesNotReceived.length > 0) && (
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mt-8 printable-area">
-                        <h3 className="text-xl font-bold text-gray-800 text-center mb-4">
-                            Constancia de Entrega de Beneficios
-                        </h3>
-                        <p className="text-center text-gray-600 mb-6">
-                            Evento: <span className="font-semibold">{selectedEvent.eventName}</span> - Fecha: <span className="font-semibold">{selectedEvent.eventDate}</span>
-                        </p>
-
-                        <div className="mb-6">
-                            <h4 className="text-lg font-semibold text-green-700 mb-3">Familias que SÍ Recibieron Beneficio ({familiesReceived.length})</h4>
-                            {familiesReceived.length === 0 ? (
-                                <p className="text-gray-600">Ninguna familia recibió beneficio en este evento.</p>
-                            ) : (
-                                <ul className="list-disc list-inside text-gray-700 space-y-1">
-                                    {familiesReceived.map(family => (
-                                        <li key={family.id}>
-                                            <span className="font-medium">{family.familyName}</span> (C.I. Jefe: {family.cedulaJefe}) - Dirección: {family.direccion}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-
-                        <div>
-                            <h4 className="text-lg font-semibold text-red-700 mb-3">Familias que NO Recibieron Beneficio ({familiesNotReceived.length})</h4>
-                            {familiesNotReceived.length === 0 ? (
-                                <p className="text-gray-600">Todas las familias registradas recibieron beneficio en este evento.</p>
-                            ) : (
-                                <ul className="list-disc list-inside text-gray-700 space-y-1">
-                                    {familiesNotReceived.map(family => (
-                                        <li key={family.id}>
-                                            <span className="font-medium">{family.familyName}</span> (C.I. Jefe: {family.cedulaJefe}) - Dirección: {family.direccion}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-
-                        <div className="text-center mt-8">
-                            <p className="text-sm text-gray-500">Generado el: {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
-                            <button
-                                onClick={() => window.print()}
-                                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md flex items-center justify-center mx-auto"
-                            >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4"></path></svg>
-                                Imprimir Constancia
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <span className="ml-3 text-gray-600">Cargando reportes...</span>
+      </div>
     );
+  }
+
+  const selectedFamily = reportData?.familiesList?.find(f => f.id === selectedFamilyId);
+  const gasReceipts = familyReportData.receipts.filter(r => 
+    r.eventName?.toLowerCase().includes('gas') || r.eventName?.toLowerCase().includes('bombona')
+  );
+
+  return (
+    <div className="space-y-10 p-4 bg-gray-50 rounded-xl max-w-7xl mx-auto">
+      
+      {/* ========================================== */}
+      {/* SECCIÓN 1: REPORTES GENERALES (DISEÑO FORMAL) */}
+      {/* ========================================== */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        
+        {/* Controles de UI (NO se imprimen en PDF) */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6 print:hidden">
+          <button onClick={refetch} className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">🔄 Actualizar</button>
+          <button onClick={handleDownloadGeneralPDF} className="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition flex items-center gap-2">📄 Descargar PDF General</button>
+          <button onClick={() => setShowFilters(!showFilters)} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition">{showFilters ? 'Ocultar Filtros' : '⚙️ Filtrar'}</button>
+        </div>
+
+        {showFilters && (
+          <div className="bg-gray-50 p-4 rounded-lg shadow-inner mb-6 print:hidden">
+            <h4 className="font-semibold mb-3">Filtros de Reporte</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(activeFilters).map(([key, enabled]) => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={enabled} onChange={() => toggleFilter(key)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                  <span className="text-sm">{filterLabels[key]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reportsError && (
+          <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md text-sm mb-6">
+            {reportsError}
+          </div>
+        )}
+
+        {/* VISTA DEL REPORTE GENERAL EN LA APLICACIÓN */}
+        <div ref={reportsRef} className="bg-white">
+          
+          {/* RESUMEN EJECUTIVO */}
+          <div className="bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-600 mb-8">
+            <h3 className="text-xl font-bold text-indigo-800 mb-3">📊 Resumen Ejecutivo</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-indigo-600">{reportData?.totalFamilies ?? 0}</p>
+                <p className="text-sm text-gray-700">Familias Registradas</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">{reportData?.totalPopulation ?? 0}</p>
+                <p className="text-sm text-gray-700">Población Total</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-yellow-600">{reportData?.disabilityCount ?? 0}</p>
+                <p className="text-sm text-gray-700">Con Discapacidad</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-red-600">{reportData?.chronicIllnessCount ?? 0}</p>
+                <p className="text-sm text-gray-700">Enf. Crónicas</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ESTADÍSTICAS DETALLADAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            
+            {activeFilters.totalFamilies && (
+              <div className="bg-blue-50 p-6 rounded-xl shadow-md border-2 border-blue-200">
+                <h4 className="text-xl font-semibold text-blue-800 mb-2">🏠 Familias Registradas</h4>
+                <p className="text-4xl font-bold text-blue-600">{reportData?.totalFamilies ?? 0}</p>
+              </div>
+            )}
+            
+            {activeFilters.totalCommunityPopulation && (
+              <div className="bg-green-50 p-6 rounded-xl shadow-md border-2 border-green-200">
+                <h4 className="text-xl font-semibold text-green-800 mb-2">👥 Población Total</h4>
+                <p className="text-4xl font-bold text-green-600">{reportData?.totalPopulation ?? 0}</p>
+                <div className="mt-4 pt-4 border-t-2 border-green-300">
+                  <p className="font-bold text-green-800 mb-2">Distribución por Género:</p>
+                  <ul className="text-sm space-y-1">
+                    {Object.entries(reportData?.genderDistribution || {}).map(([g, c]) => 
+                      c > 0 && <li key={g} className="flex justify-between"><span>{g}:</span><strong>{c}</strong></li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeFilters.disabilityCount && (
+              <div className="bg-yellow-50 p-6 rounded-xl shadow-md border-2 border-yellow-200">
+                <h4 className="text-xl font-semibold text-yellow-800 mb-2">♿ Personas con Discapacidad</h4>
+                <p className="text-4xl font-bold text-yellow-600">{reportData?.disabilityCount ?? 0}</p>
+              </div>
+            )}
+            
+            {activeFilters.chronicIllnessCount && (
+              <div className="bg-red-50 p-6 rounded-xl shadow-md border-2 border-red-200">
+                <h4 className="text-xl font-semibold text-red-800 mb-2">🏥 Enfermedades Crónicas</h4>
+                <p className="text-4xl font-bold text-red-600">{reportData?.chronicIllnessCount ?? 0}</p>
+              </div>
+            )}
+
+            {activeFilters.ageDistribution && (
+              <div className="bg-purple-50 p-6 rounded-xl shadow-md border-2 border-purple-200">
+                <h4 className="text-xl font-semibold text-purple-800 mb-2">🎂 Distribución por Edades</h4>
+                <ul className="text-sm space-y-2 mt-3">
+                  {Object.entries(reportData?.ageDistribution || {}).map(([range, count]) => (
+                    <li key={range} className="flex justify-between border-b border-purple-200 pb-1">
+                      <span>{range}</span>
+                      <strong className="text-purple-700">{count}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {activeFilters.anthropometricCount && (
+              <div className="bg-orange-50 p-6 rounded-xl shadow-md border-2 border-orange-200">
+                <h4 className="text-xl font-semibold text-orange-800 mb-2">📏 Control Antropométrico</h4>
+                <p className="text-4xl font-bold text-orange-600">{reportData?.anthropometricCount ?? 0}</p>
+                <p className="text-sm text-gray-600 mt-2">Miembros con datos registrados</p>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ========================================== */}
+      {/* SECCIÓN 2: REPORTE INDIVIDUAL POR FAMILIA */}
+      {/* ========================================== */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-6 print:hidden">📋 Reporte Especializado por Familia</h2>
+        
+        <div className="max-w-md mx-auto mb-6 print:hidden">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Selecciona una Familia:</label>
+          <select
+            value={selectedFamilyId}
+            onChange={(e) => setSelectedFamilyId(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">-- Seleccionar Familia --</option>
+            {reportData?.familiesList?.map(f => (
+              <option key={f.id} value={f.id}>{f.familyName} (CI: {f.cedulaJefe || 'N/A'})</option>
+            ))}
+          </select>
+        </div>
+
+        {selectedFamilyId && loadingFamily && (
+          <div className="text-center text-gray-600 p-6">Cargando detalles de la familia...</div>
+        )}
+
+        {selectedFamilyId && !loadingFamily && selectedFamily && (
+          <div ref={familyReportRef} className="bg-white p-8 rounded-xl border-2 border-gray-200 shadow-inner max-w-4xl mx-auto">
+            
+            {/* ENCABEZADO CON LOGO */}
+            <div className="flex items-center gap-4 border-b-4 border-indigo-700 pb-4 mb-6">
+              <img 
+                src={logo} 
+                alt="CC La Barranca" 
+                className="h-20 w-auto"
+              />
+              <div className="flex-1 text-center">
+                <h3 className="text-2xl font-bold text-gray-800">Consejo Comunal La Barranca</h3>
+                <h4 className="text-xl font-semibold text-indigo-700 mt-1">Reporte Integral de Familia</h4>
+                <p className="text-gray-600 text-sm mt-2">
+                  Fecha de generación: <strong>{new Date().toLocaleDateString('es-VE', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* Datos Generales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <h5 className="font-bold text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">📌 Datos del Hogar</h5>
+                <p className="text-sm"><strong>Familia:</strong> {selectedFamily.familyName}</p>
+                <p className="text-sm"><strong>Jefe de Familia:</strong> {familyReportData.members.find(m => m.isHead)?.memberName || 'No registrado'}</p>
+                <p className="text-sm"><strong>C.I. Jefe:</strong> {selectedFamily.cedulaJefe || 'N/A'}</p>
+                <p className="text-sm"><strong>Dirección:</strong> {selectedFamily.direccion || 'No registrada'}</p>
+                <p className="text-sm"><strong>Teléfono:</strong> {selectedFamily.telefonoContacto || 'No registrado'}</p>
+              </div>
+              <div>
+                <h5 className="font-bold text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">📦 Resumen de Suministros</h5>
+                <p className="text-sm"><strong>Total Miembros:</strong> {familyReportData.members.length}</p>
+                <p className="text-sm"><strong>Entregas de Gas/Bombonas:</strong> {gasReceipts.length} eventos</p>
+                <p className="text-sm"><strong>Total de Bolsas CLAP Recibidas:</strong> {familyReportData.receipts.reduce((sum, r) => sum + (r.bagQuantity || 0), 0)}</p>
+                {selectedFamily.bombonas && selectedFamily.bombonas.length > 0 && (
+                  <p className="text-sm mt-2"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => b.tamano).join(', ')})</p>
+                )}
+              </div>
+            </div>
+
+            {/* Tabla de Miembros */}
+            <div className="mb-6">
+              <h5 className="font-bold text-gray-800 mb-3 text-lg"> Carga Familiar Detallada</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-indigo-100 text-indigo-900 font-semibold border-b-2 border-indigo-300">
+                      <th className="p-2">Nombre</th>
+                      <th className="p-2">Cédula</th>
+                      <th className="p-2">Edad</th>
+                      <th className="p-2">Rol</th>
+                      <th className="p-2">Salud / Observaciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {familyReportData.members.map((member) => (
+                      <tr key={member.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2 font-medium">{member.memberName}</td>
+                        <td className="p-2">{member.memberCedula || 'N/A'}</td>
+                        <td className="p-2">{member.age || 'N/A'} años</td>
+                        <td className="p-2">{member.isHead ? <span className="text-indigo-600 font-bold">Jefe</span> : 'Miembro'}</td>
+                        <td className="p-2">
+                          {member.discapacidad && <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full mr-1">Discapacidad</span>}
+                          {member.enfermedadCronica && <span className="inline-block bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full mr-1">Enf. Crónica</span>}
+                          {member.controlAntropometrico && <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Antropometría</span>}
+                          {!member.discapacidad && !member.enfermedadCronica && !member.controlAntropometrico && <span className="text-gray-400">-</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Historial de Entregas */}
+            <div>
+              <h5 className="font-bold text-gray-800 mb-3 text-lg">🕒 Historial de Entregas Recientes</h5>
+              {familyReportData.receipts.length === 0 ? (
+                <p className="text-gray-500 text-sm italic">No se registran entregas para esta familia.</p>
+              ) : (
+                <div className="space-y-2">
+                  {familyReportData.receipts.slice(0, 5).map(receipt => (
+                    <div key={receipt.id} className="p-3 border rounded-lg bg-gray-50 flex flex-col sm:flex-row justify-between text-sm gap-2">
+                      <div>
+                        <p className="font-bold text-gray-800">{receipt.eventName} <span className="text-xs font-normal text-gray-500">({receipt.eventDate})</span></p>
+                        <p className="text-xs text-gray-600">Recibido por: {receipt.receivedBy?.name}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-700">Bolsas: <strong>{receipt.bagQuantity}</strong></p>
+                        {receipt.eventName?.toLowerCase().includes('gas') && <p className="text-orange-600 text-xs font-bold">🔥 Entrega de Gas</p>}
+                      </div>
+                    </div>
+                  ))}
+                  {familyReportData.receipts.length > 5 && (
+                    <p className="text-xs text-gray-500 text-center mt-2">...y {familyReportData.receipts.length - 5} entregas más.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* PIE DE PÁGINA CON FIRMA */}
+            <div className="mt-12 pt-6 border-t-2 border-gray-300">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4">
+                <div className="text-center w-full md:w-1/2">
+                  <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-12"></div>
+                  <p className="font-bold text-gray-800 text-sm">___________________________</p>
+                  <p className="text-sm font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
+                  <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
+                </div>
+                <div className="text-center w-full md:w-1/3 flex flex-col items-center">
+                  <div className="border-2 border-dashed border-gray-400 rounded-full w-24 h-24 flex items-center justify-center mb-2 bg-gray-50">
+                    <span className="text-[10px] text-gray-500 text-center leading-tight px-2">
+                      Espacio para<br/>Sello Húmedo<br/>del C.C.
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium mt-2">
+                    Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 text-center">
+                <p className="text-[10px] text-gray-500 uppercase tracking-wide">
+                  Documento generado automáticamente por el Sistema de Información
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Consejo Comunal La Barranca • Este reporte es de carácter informativo y confidencial.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Botón de descarga independiente */}
+        {selectedFamilyId && !loadingFamily && (
+          <div className="text-center mt-6 print:hidden">
+            <button
+              onClick={handleDownloadFamilyPDF}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 inline-flex items-center gap-2"
+            >
+              📄 Descargar Reporte de esta Familia (PDF)
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================== */}
+      {/* SECCIÓN 3: CONSTANCIAS DE ENTREGA */}
+      {/* ========================================== */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 print:hidden">
+        <h3 className="text-xl font-bold text-indigo-700 mb-4">📜 Constancia de Entrega por Evento</h3>
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <select
+            value={selectedEventId}
+            onChange={(e) => setSelectedEventId(e.target.value)}
+            className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+            disabled={certLoading}
+          >
+            <option value="">-- Seleccionar Evento --</option>
+            {deliveryEvents.map(ev => (
+              <option key={ev.id} value={ev.id}>{ev.eventName} • {new Date(ev.eventDate).toLocaleDateString()}</option>
+            ))}
+          </select>
+          <button
+            onClick={generateCertificate}
+            disabled={certLoading || !selectedEventId}
+            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {certLoading ? <span className="animate-spin">⏳</span> : ' Generar Constancia'}
+          </button>
+        </div>
+
+        {certificateData.received.length > 0 && (
+          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-green-800 mb-2">✅ Recibieron ({certificateData.received.length})</h4>
+            <ul className="text-sm space-y-1 max-h-40 overflow-y-auto">
+              {certificateData.received.map(f => <li key={f.id}>• {f.familyName} ({f.cedulaJefe})</li>)}
+            </ul>
+          </div>
+        )}
+        {certificateData.notReceived.length > 0 && (
+          <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+            <h4 className="font-semibold text-red-800 mb-2">⏳ Pendientes ({certificateData.notReceived.length})</h4>
+            <ul className="text-sm space-y-1 max-h-40 overflow-y-auto">
+              {certificateData.notReceived.map(f => <li key={f.id}>• {f.familyName} ({f.cedulaJefe})</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================== */}
+      {/* CONTENEDOR OCULTO PARA EL PDF GENERAL FORMAL */}
+      {/* ========================================== */}
+      <div
+        ref={generalPdfRef}
+        className="absolute top-0 left-[-9999px] w-[210mm] bg-white p-8 text-black"
+      >
+        {/* ENCABEZADO FORMAL */}
+        <div className="flex items-center gap-4 border-b-4 border-indigo-700 pb-4 mb-6">
+          <img src={logo} alt="CC La Barranca" className="h-20 w-auto" />
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-gray-800">Consejo Comunal La Barranca</h1>
+            <h2 className="text-xl font-semibold text-indigo-700 mt-1">Reporte Estadístico General del Sistema CLAP</h2>
+            <p className="text-gray-600 text-xs mt-1">
+              Generado: {new Date().toLocaleDateString('es-VE')}
+            </p>
+          </div>
+        </div>
+
+        {/* RESUMEN EJECUTIVO EN GRID COMPACTO */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="border-2 border-indigo-200 p-3 rounded text-center">
+            <p className="text-xs text-gray-600 uppercase">Total de Familias</p>
+            <p className="text-3xl font-bold text-indigo-700">{reportData?.totalFamilies ?? 0}</p>
+          </div>
+          <div className="border-2 border-green-200 p-3 rounded text-center">
+            <p className="text-xs text-gray-600 uppercase">Población Total</p>
+            <p className="text-3xl font-bold text-green-700">{reportData?.totalPopulation ?? 0}</p>
+          </div>
+          <div className="border-2 border-yellow-200 p-3 rounded text-center">
+            <p className="text-xs text-gray-600 uppercase">Con Discapacidad</p>
+            <p className="text-3xl font-bold text-yellow-600">{reportData?.disabilityCount ?? 0}</p>
+          </div>
+          <div className="border-2 border-red-200 p-3 rounded text-center">
+            <p className="text-xs text-gray-600 uppercase">Enf. Crónicas</p>
+            <p className="text-3xl font-bold text-red-700">{reportData?.chronicIllnessCount ?? 0}</p>
+          </div>
+        </div>
+
+        {/* DETALLES DEMOGRÁFICOS EN 2 COLUMNAS */}
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          <div>
+            <h4 className="text-sm font-bold text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Distribución por Género</h4>
+            <table className="w-full text-xs">
+              <tbody>
+                {Object.entries(reportData?.genderDistribution || {}).map(([g, c]) => (
+                  <tr key={g} className="border-b border-gray-100">
+                    <td className="py-1 text-gray-700">{g}</td>
+                    <td className="py-1 text-right font-bold">{c}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Distribución por Edades</h4>
+            <table className="w-full text-xs">
+              <tbody>
+                {Object.entries(reportData?.ageDistribution || {}).map(([range, count]) => (
+                  <tr key={range} className="border-b border-gray-100">
+                    <td className="py-1 text-gray-700">{range}</td>
+                    <td className="py-1 text-right font-bold">{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* CONTROL ANTROPOMÉTRICO */}
+        <div className="border-2 border-orange-200 p-3 rounded mb-6 bg-orange-50 text-center">
+          <p className="text-xs text-gray-700 uppercase font-semibold">Miembros con Control Antropométrico</p>
+          <p className="text-2xl font-bold text-orange-700">{reportData?.anthropometricCount ?? 0}</p>
+        </div>
+
+        {/* FIRMA COMPACTA */}
+        <div className="mt-8 pt-4 border-t-2 border-gray-300">
+          <div className="flex justify-center">
+            <div className="text-center w-2/3">
+              <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-10"></div>
+              <p className="font-bold text-gray-800 text-xs">___________________________</p>
+              <p className="text-xs font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
+              <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
 };
 
 export default Reports;
