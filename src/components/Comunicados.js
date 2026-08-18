@@ -19,21 +19,25 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
         const postsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'comunicados');
         const q = query(postsCollectionRef, orderBy('createdAt', 'desc'));
 
+    const commentUnsubs = [];
+
         const unsubscribe = onSnapshot(q, (snapshot) => {
+            commentUnsubs.forEach(unsub => unsub());
+            commentUnsubs.length = 0;
+
             const postsData = snapshot.docs.map(postDoc => {
                 const post = { id: postDoc.id, ...postDoc.data(), comments: [] };
 
-                // Fetch comments for each post
                 const commentsCollectionRef = collection(postDoc.ref, 'comments');
                 const commentsQuery = query(commentsCollectionRef, orderBy('createdAt', 'asc'));
-                onSnapshot(commentsQuery, (commentsSnapshot) => {
+                const unsubComments = onSnapshot(commentsQuery, (commentsSnapshot) => {
                     post.comments = commentsSnapshot.docs.map(commentDoc => ({
                         id: commentDoc.id,
                         ...commentDoc.data()
                     }));
-                    // This is a bit complex; we need to update the state in a way that React understands
                     setPosts(currentPosts => currentPosts.map(p => p.id === post.id ? post : p));
                 });
+                commentUnsubs.push(unsubComments);
 
                 return post;
             });
@@ -45,7 +49,10 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
             console.error(err);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            commentUnsubs.forEach(unsub => unsub());
+        };
     }, []);
 
     const handleCreatePost = async (e) => {

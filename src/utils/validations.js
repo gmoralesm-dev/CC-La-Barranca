@@ -7,7 +7,7 @@
  */
 export const validateName = (name) => {
   if (!name || typeof name !== 'string') return false;
-  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'\-]+$/;
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/;
   return regex.test(name.trim());
 };
 
@@ -98,25 +98,25 @@ export const validateRequired = (value, fieldName = 'Campo') => {
  * Mapa de validadores por tipo de campo (para uso dinámico)
  */
 export const VALIDATORS = {
-  name: {
+  name: Object.assign((val) => validateName(val), {
     validate: validateName,
     message: 'Solo letras, espacios, apóstrofes y guiones permitidos'
-  },
-  cedula: {
+  }),
+  cedula: Object.assign((val) => formatAndValidateCedula(val), {
     validate: (val) => formatAndValidateCedula(val).isValid,
     message: 'Formato: V-XXXXXXXX o E-XXXXXXXX (ej: V-22892416)'
-  },
-  date: {
+  }),
+  date: Object.assign((val) => validateDate(val), {
     validate: (val) => validateDate(val).isValid,
     message: 'Fecha inválida o futura'
-  },
-  phone: {
+  }),
+  phone: Object.assign((val) => validatePhone(val), {
     validate: (val) => validatePhone(val).isValid,
     message: 'Teléfono inválido (ej: 0412-1234567)'
-  },
-  required: {
+  }),
+  required: Object.assign((val, label) => validateRequired(val, label), {
     validate: (val) => validateRequired(val).isValid,
     message: 'Este campo es obligatorio'
-  },
+  }),
   // Agrega más tipos según necesites
 };

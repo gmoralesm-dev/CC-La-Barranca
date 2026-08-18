@@ -3,34 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 
-// 🔍 MOTOR DE VALIDACIÓN CENTRALIZADO
-const VALIDATORS = {
-  name: (val) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'\-]+$/.test(val?.trim()),
-  cedula: (val) => {
-    if (!val?.trim()) return { isValid: true, formatted: '' };
-    let clean = val.trim().toUpperCase();
-    if (/^[VE]\d{5,9}$/.test(clean)) clean = clean[0] + '-' + clean.substring(1);
-    return { isValid: /^[VE]-\d{5,9}$/.test(clean), formatted: clean };
-  },
-  date: (val) => {
-    if (!val) return { isValid: false, error: 'Fecha requerida' };
-    const d = new Date(val);
-    if (isNaN(d)) return { isValid: false, error: 'Fecha inválida' };
-    if (d > new Date()) return { isValid: false, error: 'No puede ser futura' };
-    return { isValid: true };
-  },
-  phone: (val) => {
-    if (!val?.trim()) return { isValid: true, formatted: '' };
-    const clean = val.replace(/[^\d+]/g, '');
-    return { isValid: /^(\+58)?0[4|2]\d{9}$/.test(clean), formatted: clean };
-  },
-  required: (val, label) => {
-    if (!val || (typeof val === 'string' && !val.trim())) {
-      return { isValid: false, error: `${label} es requerido` };
-    }
-    return { isValid: true };
-  }
-};
+import { VALIDATORS, formatAndValidateCedula } from '../utils/validations';
 
 // 🧩 COMPONENTES UI REUTILIZABLES
 const FormInput = ({ label, error, value, onChange, onBlur, type = 'text', placeholder, required, transform }) => (
@@ -169,7 +142,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   const validateField = useCallback((field, value) => {
     let err = '';
     if (['memberName', 'direccion'].includes(field) && !VALIDATORS.name(value)) err = 'Solo letras y espacios permitidos';
-    if (field === 'memberCedula' && value && !VALIDATORS.cedula(value).isValid) err = 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+    if (field === 'memberCedula' && value && !formatAndValidateCedula(value).isValid) err = 'Formato: V-XXXXXXXX o E-XXXXXXXX';
     if (field === 'fechaNacimiento') {
       const res = VALIDATORS.date(value);
       if (!res.isValid) err = res.error;
@@ -200,7 +173,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
       const err = validateField(f, formData[f]);
       if (err) { newErrors[f] = err; isValid = false; }
     });
-    if (formData.memberCedula && !VALIDATORS.cedula(formData.memberCedula).isValid) {
+    if (formData.memberCedula && !formatAndValidateCedula(formData.memberCedula).isValid) {
       newErrors.memberCedula = 'Cédula inválida'; isValid = false;
     }
     setFormErrors(newErrors);
@@ -230,7 +203,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
     setError('');
     if (!validateAll()) return;
 
-    const { formatted } = VALIDATORS.cedula(formData.memberCedula);
+    const { formatted } = formatAndValidateCedula(formData.memberCedula);
     const data = {
       memberName: formData.memberName.trim(),
       memberCedula: formatted,

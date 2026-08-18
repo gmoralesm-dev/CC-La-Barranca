@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useReportData } from '../hooks/useReportData';
 import { generatePDF } from '../utils/pdfGenerator';
-import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 import logo from '../assets/logo-cc-la-barranca.png';
 
@@ -82,21 +82,15 @@ const Reports = ({ db, userId }) => {
     if (!selectedEventId || !db) return;
     setCertLoading(true);
     try {
-      const eventRef = doc(db, COLLECTION, DATA_DOCUMENT, 'deliveries', selectedEventId);
-      const eventSnap = await getDoc(eventRef);
-      if (!eventSnap.exists()) throw new Error('Evento no encontrado');
-      
-      const event = eventSnap.data();
-      const deliveredIds = new Set(event.deliveredTo || []);
       const families = reportData?.familiesList || [];
-      
+
       const received = [];
       const notReceived = [];
-      
+
       for (const family of families) {
-        const membersRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members');
-        const membersSnap = await getDocs(membersRef);
-        const hasReceived = membersSnap.docs.some(d => deliveredIds.has(d.id));
+        const receiptsRef = collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'receipts');
+        const receiptsSnap = await getDocs(receiptsRef);
+        const hasReceived = receiptsSnap.docs.some(d => d.data().deliveryEventId === selectedEventId);
         (hasReceived ? received : notReceived).push(family);
       }
       setCertificateData({ received, notReceived });
@@ -159,9 +153,7 @@ const Reports = ({ db, userId }) => {
   return (
     <div className="space-y-10 p-4 bg-gray-50 rounded-xl max-w-7xl mx-auto">
       
-      {/* ========================================== */}
-      {/* SECCIÓN 1: REPORTES GENERALES (DISEÑO FORMAL) */}
-      {/* ========================================== */}
+      {/* Reportes generales */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
         
         {/* Controles de UI (NO se imprimen en PDF) */}
@@ -282,9 +274,7 @@ const Reports = ({ db, userId }) => {
         </div>
       </div>
 
-      {/* ========================================== */}
-      {/* SECCIÓN 2: REPORTE INDIVIDUAL POR FAMILIA */}
-      {/* ========================================== */}
+      {/* Reporte individual por familia */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
         <h2 className="text-2xl sm:text-3xl font-bold text-indigo-700 text-center mb-6 print:hidden">📋 Reporte Especializado por Familia</h2>
         
@@ -455,9 +445,7 @@ const Reports = ({ db, userId }) => {
         )}
       </div>
 
-      {/* ========================================== */}
-      {/* SECCIÓN 3: CONSTANCIAS DE ENTREGA */}
-      {/* ========================================== */}
+      {/* Constancias de entrega */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 print:hidden">
         <h3 className="text-xl font-bold text-indigo-700 mb-4">📜 Constancia de Entrega por Evento</h3>
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
@@ -499,9 +487,7 @@ const Reports = ({ db, userId }) => {
         )}
       </div>
 
-      {/* ========================================== */}
-      {/* CONTENEDOR OCULTO PARA EL PDF GENERAL FORMAL */}
-      {/* ========================================== */}
+      {/* Contenedor para exportación PDF */}
       <div
         ref={generalPdfRef}
         className="absolute top-0 left-[-9999px] w-[210mm] bg-white p-8 text-black"
