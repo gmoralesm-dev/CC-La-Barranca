@@ -1,4 +1,19 @@
-# Getting Started with Create React App
+<div align="center">
+
+[![Version](https://img.shields.io/badge/version-0.1.0-8B5CF6?style=for-the-badge)](https://github.com/gmoralesm-dev/CC-La-Barranca/releases)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-10-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Firestore](https://img.shields.io/badge/Firestore-NoSQL-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://firebase.google.com/docs/firestore)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/gmoralesm-dev/CC-La-Barranca?style=for-the-badge&color=yellow)](https://github.com/gmoralesm-dev/CC-La-Barranca/stargazers)
+
+</div>
+
+# CC La Barranca 🏔️
+
+> **Information system for CC La Barranca** — a React 19 + Firebase web app.
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
