@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/gmoralesm-dev/CC-La-Barranca?style=for-the-badge&color=yellow)](https://github.com/gmoralesm-dev/CC-La-Barranca/stargazers)
 
+[![LAZY-LOL](https://img.shields.io/badge/LAZY--LOL-Methodology-8B5CF6?style=for-the-badge&logo=book&logoColor=white)](https://github.com/gmoralesm-dev/lazy-lol-book)
+
 </div>
 
 # CC La Barranca 🏔️
