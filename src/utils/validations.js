@@ -70,7 +70,7 @@ export const validatePhone = (phone) => {
   const clean = phone.replace(/[^\d+]/g, '');
   
   // Patrones válidos: 04121234567, +584121234567, 02121234567
-  const isValid = /^(\+58)?0[4|2]\d{9}$/.test(clean) || /^\d{7,11}$/.test(clean);
+  const isValid = /^(\+58)?0?[42]\d{9}$/.test(clean) || /^\d{7,11}$/.test(clean);
   
   // Formato bonito para mostrar: 0412-1234567
   const formatted = clean.replace(/(\d{4})(\d{7})/, '$1-$2');

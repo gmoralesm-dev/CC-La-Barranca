@@ -35,3 +35,15 @@ skills-lock.json
 # Backups
 backup/
 
+# Secrets - never commit these. Note that git tooling (e.g. Cline
+# checkpoints) snapshots untracked files too, so secrets must not live in
+# the working tree at all - keep them in a password manager.
+*recovery-codes*
+*-recovery-codes.txt
+.env
+
+# Local scratch / agent session files
+diff_app.txt
+diff_reports.txt
+resume
+
