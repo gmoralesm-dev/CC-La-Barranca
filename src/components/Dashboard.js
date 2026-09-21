@@ -3,27 +3,33 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db, COLLECTION, DATA_DOCUMENT } from '../firebase'; // Verifica que la ruta sea correcta
 import './Dashboard.css';
 
-const Dashboard = () => {
+const Dashboard = ({ userRole }) => {
   // Estados para los contadores en tiempo real
   const [numFamilies, setNumFamilies] = useState(0);
   const [numDeliveries, setNumDeliveries] = useState(0);
   const [numComunicados, setNumComunicados] = useState(0);
 
+  const isManager = ['lider_de_calle', 'administrador', 'admin', 'vocera_principal', 'vocera', 'vocero'].includes(userRole);
+
   useEffect(() => {
-    // 1. Escuchar cambios en la sub-colección de Familias
-    const qFamilies = query(collection(db, COLLECTION, DATA_DOCUMENT, "families"));
-    const unsubFamilies = onSnapshot(qFamilies, (snapshot) => {
-      setNumFamilies(snapshot.size);
-    }, (error) => console.error("Error contando familias:", error));
+    let unsubFamilies = () => {};
+    let unsubDeliveries = () => {};
 
-    // 2. Escuchar cambios en la sub-colección de Eventos (Entregas)
-    // Nota: Asegúrate de que el nombre coincide con el de tus otros componentes
-    const qDeliveries = query(collection(db, COLLECTION, DATA_DOCUMENT, "deliveries"));
-    const unsubDeliveries = onSnapshot(qDeliveries, (snapshot) => {
-      setNumDeliveries(snapshot.size);
-    }, (error) => console.error("Error contando eventos:", error));
+    // 1. Escuchar cambios en Familias (solo para gestores con permiso)
+    if (isManager) {
+      const qFamilies = query(collection(db, COLLECTION, DATA_DOCUMENT, "families"));
+      unsubFamilies = onSnapshot(qFamilies, (snapshot) => {
+        setNumFamilies(snapshot.size);
+      }, (error) => console.error("Error contando familias:", error));
 
-    // 3. Escuchar cambios en la sub-colección de Comunicados
+      // 2. Escuchar cambios en Eventos (solo para gestores con permiso)
+      const qDeliveries = query(collection(db, COLLECTION, DATA_DOCUMENT, "deliveries"));
+      unsubDeliveries = onSnapshot(qDeliveries, (snapshot) => {
+        setNumDeliveries(snapshot.size);
+      }, (error) => console.error("Error contando eventos:", error));
+    }
+
+    // 3. Escuchar cambios en Comunicados (público)
     const qComunicados = query(collection(db, COLLECTION, DATA_DOCUMENT, "comunicados"));
     const unsubComunicados = onSnapshot(qComunicados, (snapshot) => {
       setNumComunicados(snapshot.size);
@@ -35,7 +41,7 @@ const Dashboard = () => {
       unsubDeliveries();
       unsubComunicados();
     };
-  }, []);
+  }, [isManager]);
 
   const stats = [
     { label: "Familias Registradas", value: numFamilies, icon: "👥", color: "blue" },

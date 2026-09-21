@@ -59,7 +59,7 @@ const App = () => {
                             }
                         }
                     } else {
-                        setUserRole(adminSnap.data().role || 'administrador');
+                        setUserRole(adminSnap.data().role || 'desconocido');
                     }
                 } catch (err) {
                     console.error("Auth State Error:", err);
@@ -206,18 +206,18 @@ const App = () => {
                         <>
                             <button onClick={() => setCurrentPage('families')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'families' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Familias</button>
                             <button onClick={() => setCurrentPage('deliveries')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'deliveries' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Entregas</button>
+                            <button onClick={() => setCurrentPage('reports')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'reports' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Reportes</button>
                         </>
                     )}
 
-                    <button onClick={() => setCurrentPage('reports')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'reports' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Reportes</button>
                     <button onClick={() => setCurrentPage('comunicados')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'comunicados' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Comunicados</button>
                 </nav>
 
                 <main className="bg-gray-50 rounded-xl p-4 min-h-[400px]">
-                    {currentPage === 'dashboard' && <Dashboard />}
+                    {currentPage === 'dashboard' && <Dashboard userRole={userRole} />}
                     {currentPage === 'families' && isManagerRole() && <FamilyManagement db={db} userId={userId} />}
                     {currentPage === 'deliveries' && isManagerRole() && <DeliveryEvents db={db} userId={userId} />}
-                    {currentPage === 'reports' && <Reports db={db} userId={userId} />}
+                    {currentPage === 'reports' && isManagerRole() && <Reports db={db} userId={userId} />}
                     {currentPage === 'comunicados' && <Comunicados db={db} userId={userId} userRole={userRole} userFullName={userEmail} />}
                 </main>
             </div>
