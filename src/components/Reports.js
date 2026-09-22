@@ -271,6 +271,36 @@ const Reports = ({ db, userId }) => {
             )}
           </div>
 
+          {/* PIE DE PÁGINA CON FIRMA Y SELLO HÚMEDO */}
+          <div className="mt-12 pt-6 border-t-2 border-gray-300">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4">
+              <div className="text-center w-full md:w-1/2">
+                <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-12"></div>
+                <p className="font-bold text-gray-800 text-sm">___________________________</p>
+                <p className="text-sm font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
+                <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
+              </div>
+              <div className="text-center w-full md:w-1/3 flex flex-col items-center">
+                <div className="border-2 border-dashed border-gray-400 rounded-full w-24 h-24 flex items-center justify-center mb-2 bg-gray-50">
+                  <span className="text-[10px] text-gray-500 text-center leading-tight px-2">
+                    Espacio para<br/>Sello Húmedo<br/>del C.C.
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 font-medium mt-2">
+                  Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 text-center">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide">
+                Documento generado automáticamente por el Sistema de Información
+              </p>
+              <p className="text-[10px] text-gray-400 mt-1">
+                Consejo Comunal La Barranca • Este reporte es de carácter informativo y confidencial.
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -560,15 +590,30 @@ const Reports = ({ db, userId }) => {
           <p className="text-2xl font-bold text-orange-700">{reportData?.anthropometricCount ?? 0}</p>
         </div>
 
-        {/* FIRMA COMPACTA */}
+        {/* FIRMA Y SELLO HÚMEDO */}
         <div className="mt-8 pt-4 border-t-2 border-gray-300">
-          <div className="flex justify-center">
-            <div className="text-center w-2/3">
+          <div className="flex justify-between items-center gap-6">
+            <div className="text-center w-1/2">
               <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-10"></div>
               <p className="font-bold text-gray-800 text-xs">___________________________</p>
               <p className="text-xs font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
               <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
             </div>
+            <div className="text-center w-1/3 flex flex-col items-center">
+              <div className="border-2 border-dashed border-gray-400 rounded-full w-20 h-20 flex items-center justify-center mb-1 bg-gray-50">
+                <span className="text-[9px] text-gray-500 text-center leading-tight px-1">
+                  Espacio para<br/>Sello Húmedo<br/>del C.C.
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-600 font-medium">
+                Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 text-center">
+            <p className="text-[9px] text-gray-400">
+              Consejo Comunal La Barranca • Este reporte estadístico general es de carácter informativo e institucional.
+            </p>
           </div>
         </div>
       </div>
