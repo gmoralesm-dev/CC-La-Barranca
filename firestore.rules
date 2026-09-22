@@ -18,13 +18,6 @@ service cloud.firestore {
          getUserRole() == 'vocero');
     }
 
-    // Helper function to check if the user is the initial bootstrap admin
-    function isInitialAdmin() {
-      return request.auth != null && 
-        (request.auth.uid == 'nM34hUeKWqQPttmWn2ITSbFtRBx2' || 
-         request.auth.token.email == 'cazgenius@gmail.com');
-    }
-
     match /Consejo-Comunal-La-Barranca/{data} {
       
       // F2 FIX: Public read for announcements; only managers can publish/edit/delete posts.
@@ -57,17 +50,15 @@ service cloud.firestore {
       }
 
       // F1 FIX: Users cannot assign or escalate their own role.
-      // Only managers (or the bootstrap admin) can grant elevated roles.
+      // Only managers can grant elevated roles.
       match /users/{userId} {
         allow read: if request.auth != null && (request.auth.uid == userId || isManager());
         allow create: if request.auth != null && (
           isManager() || 
-          isInitialAdmin() ||
           (request.auth.uid == userId && (!('role' in request.resource.data) || request.resource.data.role == 'desconocido' || request.resource.data.role == 'guest'))
         );
         allow update: if request.auth != null && (
           isManager() || 
-          isInitialAdmin() ||
           (request.auth.uid == userId && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role))
         );
         allow delete: if isManager();

@@ -36,30 +36,17 @@ const App = () => {
                 try {
                     const adminSnap = await getDoc(adminDocRef);
 
-                    if (!adminSnap.exists()) {
-                        if (user.uid === process.env.REACT_APP_INITIAL_ADMIN_UID || user.email === process.env.REACT_APP_INITIAL_ADMIN_EMAIL) {
-                            console.log("Bootstrap: Initializing admin record...");
-                            const adminData = {
-                                email: user.email,
-                                role: "administrador", 
-                                nombre: "Gabriel Admin",
-                                uid: user.uid,
-                                createdAt: new Date()
-                            };
-                            await setDoc(adminDocRef, adminData);
-                            setUserRole("administrador");
-                        } else {
-                            const guestDocRef = doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, user.uid);
-                            const guestSnap = await getDoc(guestDocRef);
-                            if (guestSnap.exists()) {
-                                setUserRole(guestSnap.data().role || 'guest');
-                            } else {
-                                setUserRole("desconocido");
-                                setError("No se encontró el perfil en la base de datos. Si usas el emulador, puede que se haya limpiado.");
-                            }
-                        }
-                    } else {
+                    if (adminSnap.exists()) {
                         setUserRole(adminSnap.data().role || 'desconocido');
+                    } else {
+                        const guestDocRef = doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, user.uid);
+                        const guestSnap = await getDoc(guestDocRef);
+                        if (guestSnap.exists()) {
+                            setUserRole(guestSnap.data().role || 'guest');
+                        } else {
+                            setUserRole("desconocido");
+                            setError("No se encontró el perfil en la base de datos.");
+                        }
                     }
                 } catch (err) {
                     console.error("Auth State Error:", err);
