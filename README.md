@@ -36,6 +36,18 @@ You may also see any lint errors in the console.
 Launches the test runner in the interactive watch mode.\
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
+### `npm run test:rules`
+
+Runs the Firebase Firestore Security Rules unit tests using `@firebase/rules-unit-testing` against the local Firestore Emulator to verify access control, role authorization, and STRIDE mitigations (including prevention of self-promotion / elevation of privilege).
+
+### `npm run check:traceability`
+
+Executes the automated LAZY-LOL traceability verification script (`scripts/verify-traceability.js`), mechanically validating that 100% of Yield functional requirements (`YLD-00` through `YLD-06`) are covered by implementation components and test suites.
+
+### `npm run test:all`
+
+Runs the complete automated validation pipeline: React component tests, Firestore security rules unit tests in the emulator, and the mechanized traceability check.
+
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
