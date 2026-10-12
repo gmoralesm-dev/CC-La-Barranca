@@ -32,7 +32,7 @@ jest.mock('../firebase', () => ({
   DATA_DOCUMENT: 'data',
 }));
 
-describe('DeliveryEvents — Validación de formulario', () => {
+describe('[YLD-02] DeliveryEvents — Gestión y validación de eventos de distribución', () => {
   test('muestra error si se intenta crear un evento con campos vacíos', async () => {
 
 

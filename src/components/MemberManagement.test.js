@@ -44,7 +44,7 @@ const setupFirestoreMocks = ({ invokeSnapshot = true } = {}) => {
   getDocs.mockResolvedValue({ docs: [] });
 };
 
-describe('MemberManagement Component', () => {
+describe('[YLD-03] MemberManagement — Núcleo familiar y registro de beneficios', () => {
   const mockDb = {};
   const mockUserId = 'test-user-id';
   const mockFamily = { id: 'family-1', familyName: 'FAMILIA TEST' };

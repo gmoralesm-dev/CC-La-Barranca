@@ -20,6 +20,9 @@
     "start": "react-scripts start",
     "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
+    "test:rules": "firebase emulators:exec --only firestore 'node --test test/firestore.rules.test.js'",
+    "check:traceability": "node scripts/verify-traceability.js",
+    "test:all": "CI=true react-scripts test --watchAll=false && npm run test:rules && npm run check:traceability",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -43,5 +46,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4"
   }
 }

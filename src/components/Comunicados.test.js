@@ -64,7 +64,7 @@ const mockOnePost = () => {
   });
 };
 
-describe('Comunicados Component', () => {
+describe('[YLD-06] Comunicados Component — Cartelera pública y comentarios', () => {
   const mockUserId = 'test-user-id';
   const mockUserFullName = 'Test User';
 

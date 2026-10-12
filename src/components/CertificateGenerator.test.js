@@ -25,7 +25,7 @@ jest.mock('../firebase', () => ({
   DATA_DOCUMENT: 'data',
 }));
 
-describe('CertificateGenerator Component', () => {
+describe('[YLD-04] CertificateGenerator — Generación de constancias PDF', () => {
   const mockDb = {};
   const mockUserId = 'test-user-id';
 

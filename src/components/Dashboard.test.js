@@ -32,7 +32,7 @@ const mockOnSnapshot = () => {
   });
 };
 
-describe('Dashboard Component', () => {
+describe('[YLD-05] Dashboard Component — Estadísticas y reportes en tiempo real', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockOnSnapshot();
