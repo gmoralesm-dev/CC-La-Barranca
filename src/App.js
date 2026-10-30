@@ -9,6 +9,7 @@ import DeliveryEvents from './components/DeliveryEvents';
 import Reports from './components/Reports';
 import Dashboard from './components/Dashboard';
 import Comunicados from './components/Comunicados';
+import SettingsPanel from './components/SettingsPanel';
 import logo from './assets/logo-cc-la-barranca.png';
 
 const App = () => {
@@ -21,7 +22,9 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); 
     const [isGuestLogin, setIsGuestLogin] = useState(false); 
     const [guestName, setGuestName] = useState(''); 
-    const [loadingAuth, setLoadingAuth] = useState(true); 
+    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [avatarUrl, setAvatarUrl] = useState(''); 
+    const [displayName, setDisplayName] = useState('');
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -37,12 +40,18 @@ const App = () => {
                     const adminSnap = await getDoc(adminDocRef);
 
                     if (adminSnap.exists()) {
-                        setUserRole(adminSnap.data().role || 'desconocido');
+                        const adminData = adminSnap.data();
+                        setUserRole(adminData.role || 'desconocido');
+                        setAvatarUrl(adminData.avatarUrl || '');
+                        setDisplayName(adminData.displayName || adminData.nombre || '');
                     } else {
                         const guestDocRef = doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, user.uid);
                         const guestSnap = await getDoc(guestDocRef);
                         if (guestSnap.exists()) {
-                            setUserRole(guestSnap.data().role || 'guest');
+                            const guestData = guestSnap.data();
+                            setUserRole(guestData.role || 'guest');
+                            setAvatarUrl(guestData.avatarUrl || '');
+                            setDisplayName(guestData.displayName || guestData.fullName || '');
                         } else {
                             setUserRole("desconocido");
                             setError("No se encontró el perfil en la base de datos.");
@@ -56,6 +65,8 @@ const App = () => {
                 setUserId(null);
                 setUserRole(null);
                 setUserEmail('');
+                setAvatarUrl('');
+                setDisplayName('');
             }
             setLoadingAuth(false);
         });
@@ -179,10 +190,19 @@ const App = () => {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
-                            <p className="text-sm font-bold text-gray-700">{userEmail}</p>
+                            <p className="text-sm font-bold text-gray-700">{displayName || userEmail}</p>
                             <p className="text-xs text-indigo-500 uppercase font-semibold">{userRole || 'Verificando...'}</p>
                         </div>
-                        <button onClick={handleSignOut} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">Cerrar Sesión</button>
+                        <SettingsPanel
+                            userId={userId}
+                            userRole={userRole}
+                            userEmail={userEmail}
+                            displayName={displayName}
+                            setDisplayName={setDisplayName}
+                            avatarUrl={avatarUrl}
+                            setAvatarUrl={setAvatarUrl}
+                            onSignOut={handleSignOut}
+                        />
                     </div>
                 </header>
 
@@ -205,7 +225,7 @@ const App = () => {
                     {currentPage === 'families' && isManagerRole() && <FamilyManagement db={db} userId={userId} />}
                     {currentPage === 'deliveries' && isManagerRole() && <DeliveryEvents db={db} userId={userId} />}
                     {currentPage === 'reports' && isManagerRole() && <Reports db={db} userId={userId} />}
-                    {currentPage === 'comunicados' && <Comunicados db={db} userId={userId} userRole={userRole} userFullName={userEmail} />}
+                    {currentPage === 'comunicados' && <Comunicados db={db} userId={userId} userRole={userRole} userFullName={displayName || userEmail} />}
                 </main>
             </div>
         </div>
