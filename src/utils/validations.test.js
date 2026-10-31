@@ -4,6 +4,8 @@ import {
   validateDate,
   validatePhone,
   validateRequired,
+  sanitizeCapitalize,
+  sanitizeText,
 } from './validations';
 
 describe('validateName', () => {
@@ -36,6 +38,16 @@ describe('formatAndValidateCedula', () => {
     expect(formatAndValidateCedula('12345678').isValid).toBe(false);
     expect(formatAndValidateCedula('').isValid).toBe(false);
     expect(formatAndValidateCedula('X-12345678').isValid).toBe(false);
+  });
+
+  test('valida edad mínima de 9 años para portar cédula en Venezuela', () => {
+    // Menor de 9 años (ej: 5 años) debe ser rechazada
+    expect(formatAndValidateCedula('V-12345678', 5).isValid).toBe(false);
+    expect(formatAndValidateCedula('V-12345678', 5).error).toContain('9 años');
+
+    // Mayor o igual a 9 años (ej: 9, 25) es válida
+    expect(formatAndValidateCedula('V-12345678', 9).isValid).toBe(true);
+    expect(formatAndValidateCedula('V-12345678', 25).isValid).toBe(true);
   });
 });
 
@@ -79,3 +91,17 @@ describe('validateRequired', () => {
     expect(validateRequired(0).isValid).toBe(true);
   });
 });
+
+describe('sanitizeCapitalize y sanitizeText', () => {
+  test('convierte texto a Title Case con primera letra en mayúscula', () => {
+    expect(sanitizeCapitalize('gabriel morales')).toBe('Gabriel Morales');
+    expect(sanitizeCapitalize('MARÍA PÉREZ')).toBe('María Pérez');
+    expect(sanitizeCapitalize('  juan   carlos  de   la   rosa  ')).toBe('Juan Carlos De La Rosa');
+  });
+
+  test('limpia espacios extras con sanitizeText', () => {
+    expect(sanitizeText('   calle   principal   sector 2   ')).toBe('calle principal sector 2');
+    expect(sanitizeText('')).toBe('');
+  });
+});
+

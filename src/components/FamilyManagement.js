@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
+import { sanitizeCapitalize } from '../utils/validations';
 import MemberManagement from './MemberManagement'; // Importa el componente de gestión de miembros
 
 
@@ -55,13 +56,14 @@ const FamilyManagement = ({ db, userId }) => {
         e.preventDefault();
         setError('');
 
-        if (!newFamilyName) {
+        const cleanFamilyName = sanitizeCapitalize(newFamilyName);
+        if (!cleanFamilyName) {
             setError('El nombre de la familia es obligatorio.');
             return;
         }
 
         const familyData = {
-            familyName: newFamilyName,
+            familyName: cleanFamilyName,
             bombonas: bombonasList,
             createdAt: Date.now(),
             updatedAt: Date.now()
@@ -164,7 +166,10 @@ const FamilyManagement = ({ db, userId }) => {
                     type="text"
                     placeholder="Nombre de la Familia"
                     value={newFamilyName}
-                    onChange={(e) => setNewFamilyName(e.target.value.toUpperCase())}
+                    onChange={(e) => setNewFamilyName(e.target.value)}
+                    onBlur={() => {
+                        if (newFamilyName) setNewFamilyName(sanitizeCapitalize(newFamilyName));
+                    }}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                 />

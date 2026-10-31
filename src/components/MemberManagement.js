@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 
-import { VALIDATORS, formatAndValidateCedula } from '../utils/validations';
+import { VALIDATORS, formatAndValidateCedula, sanitizeCapitalize, sanitizeText } from '../utils/validations';
 
 // 🧩 COMPONENTES UI REUTILIZABLES
 const FormInput = ({ label, error, value, onChange, onBlur, type = 'text', placeholder, required, transform }) => (
@@ -139,28 +139,40 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   };
 
   // --- VALIDACIÓN DEL FORMULARIO ---
-  const validateField = useCallback((field, value) => {
+  const validateField = useCallback((field, value, currentValues = formData) => {
     let err = '';
     if (['memberName', 'direccion'].includes(field) && !VALIDATORS.name(value)) err = 'Solo letras y espacios permitidos';
-    if (field === 'memberCedula' && value && !formatAndValidateCedula(value).isValid) err = 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+    if (field === 'memberCedula' && value) {
+      const cedRes = formatAndValidateCedula(value, currentValues.fechaNacimiento);
+      if (!cedRes.isValid) err = cedRes.error || 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+    }
     if (field === 'fechaNacimiento') {
       const res = VALIDATORS.date(value);
-      if (!res.isValid) err = res.error;
+      if (!res.isValid) {
+        err = res.error;
+      } else if (currentValues.memberCedula) {
+        // Si ya hay cédula ingresada, validar consistencia con la edad calculada
+        const cedCheck = formatAndValidateCedula(currentValues.memberCedula, value);
+        if (!cedCheck.isValid && cedCheck.error) {
+          err = cedCheck.error;
+        }
+      }
     }
     if (field === 'telefonoContacto' && value && !VALIDATORS.phone(value).isValid) err = 'Teléfono inválido (ej: 0412-1234567)';
     if (['memberName', 'fechaNacimiento', 'memberGender', 'escolaridad'].includes(field) && !value?.trim()) err = 'Campo requerido';
     if (isHeadForm && ['direccion', 'telefonoContacto'].includes(field) && !value?.trim()) err = 'Campo requerido';
     return err;
-  }, [isHeadForm]);
+  }, [isHeadForm, formData]);
 
   const handleFormChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (touched[field]) setFormErrors(prev => ({ ...prev, [field]: validateField(field, value) }));
+    const updated = { ...formData, [field]: value };
+    setFormData(updated);
+    if (touched[field]) setFormErrors(prev => ({ ...prev, [field]: validateField(field, value, updated) }));
   };
 
   const handleFormBlur = (field) => {
     setTouched(prev => ({ ...prev, [field]: true }));
-    setFormErrors(prev => ({ ...prev, [field]: validateField(field, formData[field]) }));
+    setFormErrors(prev => ({ ...prev, [field]: validateField(field, formData[field], formData) }));
   };
 
   const validateAll = () => {
@@ -170,11 +182,15 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
     const newErrors = {};
     let isValid = true;
     requiredFields.forEach(f => {
-      const err = validateField(f, formData[f]);
+      const err = validateField(f, formData[f], formData);
       if (err) { newErrors[f] = err; isValid = false; }
     });
-    if (formData.memberCedula && !formatAndValidateCedula(formData.memberCedula).isValid) {
-      newErrors.memberCedula = 'Cédula inválida'; isValid = false;
+    if (formData.memberCedula) {
+      const cedRes = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+      if (!cedRes.isValid) {
+        newErrors.memberCedula = cedRes.error || 'Cédula inválida';
+        isValid = false;
+      }
     }
     setFormErrors(newErrors);
     return isValid;
@@ -203,19 +219,19 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
     setError('');
     if (!validateAll()) return;
 
-    const { formatted } = formatAndValidateCedula(formData.memberCedula);
+    const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
     const data = {
-      memberName: formData.memberName.trim(),
+      memberName: sanitizeCapitalize(formData.memberName),
       memberCedula: formatted,
       fechaNacimiento: formData.fechaNacimiento,
       age: calculateAge(formData.fechaNacimiento),
       memberGender: formData.memberGender,
       escolaridad: formData.escolaridad,
       discapacidad: formData.discapacidad,
-      tipoDiscapacidad: formData.discapacidad ? formData.tipoDiscapacidad : '',
+      tipoDiscapacidad: formData.discapacidad ? sanitizeCapitalize(formData.tipoDiscapacidad) : '',
       enfermedadCronica: formData.enfermedadCronica,
-      tipoEnfermedad: formData.enfermedadCronica ? formData.tipoEnfermedad : '',
-      medicinas: formData.enfermedadCronica ? formData.medicinas : '',
+      tipoEnfermedad: formData.enfermedadCronica ? sanitizeCapitalize(formData.tipoEnfermedad) : '',
+      medicinas: formData.enfermedadCronica ? sanitizeText(formData.medicinas) : '',
       controlAntropometrico: formData.controlAntropometrico,
       isHead: isHeadForm,
       familyId: family.id,
@@ -230,7 +246,9 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
         await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members'), { ...data, createdAt: Date.now() });
         if (isHeadForm) {
           await updateDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id), {
-            cedulaJefe: formatted, direccion: formData.direccion, telefonoContacto: formData.telefonoContacto
+            cedulaJefe: formatted, 
+            direccion: sanitizeText(formData.direccion), 
+            telefonoContacto: formData.telefonoContacto?.trim() || ''
           });
         }
       }
@@ -300,14 +318,66 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
         <h3 className="text-xl font-semibold text-indigo-700">{isHeadForm ? '👑 Registrar Jefe de Familia' : formMode === 'edit' ? '✏️ Editar Miembro' : '➕ Nuevo Miembro'}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput label="Nombre Completo" value={formData.memberName} onChange={v => handleFormChange('memberName', v.toUpperCase())} onBlur={() => handleFormBlur('memberName')} error={formErrors.memberName} required placeholder="EJ: MARÍA PÉREZ" />
-          <FormInput label="Cédula" value={formData.memberCedula} onChange={v => handleFormChange('memberCedula', v)} onBlur={() => handleFormBlur('memberCedula')} error={formErrors.memberCedula} placeholder="V-12345678" />
+          <FormInput 
+            label="Nombre Completo" 
+            value={formData.memberName} 
+            onChange={v => handleFormChange('memberName', v)} 
+            onBlur={() => {
+              // Sanitizar a Title Case al salir del campo
+              if (formData.memberName) {
+                handleFormChange('memberName', sanitizeCapitalize(formData.memberName));
+              }
+              handleFormBlur('memberName');
+            }} 
+            error={formErrors.memberName} 
+            required 
+            placeholder="Ej: María Pérez" 
+          />
+          <FormInput 
+            label="Cédula" 
+            value={formData.memberCedula} 
+            onChange={v => handleFormChange('memberCedula', v.toUpperCase())} 
+            onBlur={() => {
+              if (formData.memberCedula) {
+                const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+                if (formatted) handleFormChange('memberCedula', formatted);
+              }
+              handleFormBlur('memberCedula');
+            }} 
+            error={formErrors.memberCedula} 
+            placeholder="V-12345678 (mínimo 9 años)" 
+          />
         </div>
 
         {isHeadForm && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput label="Dirección" value={formData.direccion} onChange={v => handleFormChange('direccion', v)} onBlur={() => handleFormBlur('direccion')} error={formErrors.direccion} required placeholder="Calle, Sector, Casa" />
-            <FormInput label="Teléfono" value={formData.telefonoContacto} onChange={v => handleFormChange('telefonoContacto', v)} onBlur={() => handleFormBlur('telefonoContacto')} error={formErrors.telefonoContacto} required placeholder="0412-1234567" />
+            <FormInput 
+              label="Dirección" 
+              value={formData.direccion} 
+              onChange={v => handleFormChange('direccion', v)} 
+              onBlur={() => {
+                if (formData.direccion) handleFormChange('direccion', sanitizeText(formData.direccion));
+                handleFormBlur('direccion');
+              }} 
+              error={formErrors.direccion} 
+              required 
+              placeholder="Calle, Sector, Casa" 
+            />
+            <FormInput 
+              label="Teléfono" 
+              value={formData.telefonoContacto} 
+              onChange={v => handleFormChange('telefonoContacto', v)} 
+              onBlur={() => {
+                if (formData.telefonoContacto) {
+                  const pRes = VALIDATORS.phone(formData.telefonoContacto);
+                  if (pRes.isValid && pRes.formatted) handleFormChange('telefonoContacto', pRes.formatted);
+                }
+                handleFormBlur('telefonoContacto');
+              }} 
+              error={formErrors.telefonoContacto} 
+              required 
+              placeholder="0412-1234567" 
+            />
           </div>
         )}
 

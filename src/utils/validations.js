@@ -1,6 +1,47 @@
 // src/utils/validations.js
 
 /**
+ * Sanitiza y formatea texto en Title Case (primera letra de cada palabra en mayúscula, resto en minúscula)
+ * Limpia espacios múltiples accidentales
+ * @param {string} str - Texto a formatear
+ * @returns {string}
+ */
+export const sanitizeCapitalize = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(/(^|\s|['-])\p{L}/gu, (char) => char.toUpperCase());
+};
+
+/**
+ * Sanitiza texto general (elimina espacios extra y caracteres de control)
+ * @param {string} str
+ * @returns {string}
+ */
+export const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.trim().replace(/\s+/g, ' ');
+};
+
+/**
+ * Calcula la edad en años a partir de una fecha (YYYY-MM-DD o Date)
+ * @param {string|Date} dob - Fecha de nacimiento
+ * @returns {number|null}
+ */
+export const calculateAgeFromDate = (dob) => {
+  if (!dob) return null;
+  const birth = new Date(dob);
+  if (isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+};
+
+/**
  * Valida que un nombre contenga solo letras, espacios, apóstrofes y guiones
  * @param {string} name - Nombre a validar
  * @returns {boolean}
@@ -13,10 +54,12 @@ export const validateName = (name) => {
 
 /**
  * Valida y formatea una cédula venezolana (V-XXXXXXXX o E-XXXXXXXX)
+ * En Venezuela la edad mínima legal para portar cédula es de 9 años.
  * @param {string} cedula - Cédula a validar
- * @returns {{ isValid: boolean, formatted: string }}
+ * @param {string|number|Date} [birthDateOrAge] - Fecha de nacimiento o edad (opcional)
+ * @returns {{ isValid: boolean, formatted: string, error?: string }}
  */
-export const formatAndValidateCedula = (cedula) => {
+export const formatAndValidateCedula = (cedula, birthDateOrAge = null) => {
   if (!cedula) return { isValid: false, formatted: '' };
   
   let clean = cedula.trim().toUpperCase();
@@ -26,8 +69,30 @@ export const formatAndValidateCedula = (cedula) => {
     clean = clean[0] + '-' + clean.substring(1);
   }
   
-  const isValid = /^[VE]-\d{5,9}$/.test(clean);
-  return { isValid, formatted: isValid ? clean : clean };
+  const isValidFormat = /^[VE]-\d{5,9}$/.test(clean);
+  if (!isValidFormat) {
+    return { isValid: false, formatted: clean, error: 'Formato inválido (ej: V-12345678 o E-12345678)' };
+  }
+
+  // Validación de edad mínima para cédula en Venezuela (9 años)
+  if (birthDateOrAge !== null && birthDateOrAge !== undefined && birthDateOrAge !== '') {
+    let age = null;
+    if (typeof birthDateOrAge === 'number') {
+      age = birthDateOrAge;
+    } else {
+      age = calculateAgeFromDate(birthDateOrAge);
+    }
+
+    if (age !== null && age < 9) {
+      return {
+        isValid: false,
+        formatted: clean,
+        error: 'En Venezuela la edad mínima para poseer cédula es de 9 años'
+      };
+    }
+  }
+  
+  return { isValid: true, formatted: clean };
 };
 
 /**

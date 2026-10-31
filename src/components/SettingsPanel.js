@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, COLLECTION, DATA_DOCUMENT, USERS_COLLECTION, INVITADOS_COLLECTION } from '../firebase';
+import { sanitizeCapitalize } from '../utils/validations';
 
 const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
@@ -102,8 +103,8 @@ const SettingsPanel = ({
   // Save display name to Firestore
   const handleSaveDisplayName = async (e) => {
     e.preventDefault();
-    const trimmed = nameInput.trim();
-    if (!trimmed) {
+    const cleanName = sanitizeCapitalize(nameInput);
+    if (!cleanName) {
       setNameError('El nombre no puede estar vacío');
       return;
     }
@@ -115,12 +116,12 @@ const SettingsPanel = ({
       const userDocRef = doc(db, COLLECTION, DATA_DOCUMENT, collectionName, userId);
       
       const payload = isGuest 
-        ? { displayName: trimmed, fullName: trimmed } 
-        : { displayName: trimmed, nombre: trimmed };
+        ? { displayName: cleanName, fullName: cleanName } 
+        : { displayName: cleanName, nombre: cleanName };
       
       await updateDoc(userDocRef, payload);
 
-      setDisplayName(trimmed);
+      setDisplayName(cleanName);
       setNameSuccess(true);
       setTimeout(() => {
         setIsEditingName(false);
