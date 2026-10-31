@@ -287,12 +287,16 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
     if (!event || !recipient) return setError('Datos inválidos.');
 
     const data = {
-      deliveryEventId: event.id, eventName: event.eventName, eventDate: event.eventDate,
-      eventType: event.eventDescription, beneficiariesCount: members.length,
+      deliveryEventId: event.id, 
+      eventName: event.eventName, 
+      eventDate: event.eventDate,
+      eventType: event.eventDescription, 
+      beneficiariesCount: members.length,
       bagQuantity: calculateBags(members.length),
       receivedBy: { id: recipient.id, name: recipient.memberName, cedula: recipient.memberCedula || 'N/A' },
       jefeDeFamiliaName: members.find(m => m.isHead)?.memberName || family.familyName,
-      notes: benefitForm.notes, receiptDate: Date.now()
+      notes: sanitizeText(benefitForm.notes), 
+      receiptDate: Date.now()
     };
 
     try {

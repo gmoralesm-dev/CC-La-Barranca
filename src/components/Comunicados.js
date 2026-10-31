@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db, COLLECTION, DATA_DOCUMENT } from '../firebase';
+import { sanitizeText } from '../utils/validations';
 
 
 const Comunicados = ({ userId, userRole, userFullName }) => {
@@ -57,7 +58,8 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
 
     const handleCreatePost = async (e) => {
         e.preventDefault();
-        if (!newPostContent.trim()) {
+        const cleanContent = sanitizeText(newPostContent);
+        if (!cleanContent) {
             setError('El contenido del comunicado no puede estar vacío.');
             return;
         }
@@ -65,7 +67,7 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
         try {
             const postsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'comunicados');
             await addDoc(postsCollectionRef, {
-                content: newPostContent,
+                content: cleanContent,
                 authorId: userId,
                 authorName: userFullName,
                 createdAt: serverTimestamp()
@@ -79,8 +81,9 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
 
     const handleCreateComment = async (e, postId) => {
         e.preventDefault();
-        const commentContent = commentContents[postId] || '';
-        if (!commentContent.trim()) {
+        const rawContent = commentContents[postId] || '';
+        const cleanComment = sanitizeText(rawContent);
+        if (!cleanComment) {
             setError('El comentario no puede estar vacío.');
             return;
         }
@@ -88,7 +91,7 @@ const Comunicados = ({ userId, userRole, userFullName }) => {
         try {
             const commentsCollectionRef = collection(db, COLLECTION, DATA_DOCUMENT, 'comunicados', postId, 'comments');
             await addDoc(commentsCollectionRef, {
-                content: commentContent,
+                content: cleanComment,
                 authorId: userId,
                 authorName: userFullName,
                 createdAt: serverTimestamp()

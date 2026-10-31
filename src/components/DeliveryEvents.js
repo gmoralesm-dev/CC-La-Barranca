@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
+import { sanitizeCapitalize, sanitizeText } from '../utils/validations';
 
 
 const DeliveryEvents = ({ db, userId }) => {
@@ -57,15 +58,18 @@ const DeliveryEvents = ({ db, userId }) => {
         e.preventDefault();
         setError('');
 
-        if (!eventName || !eventDate || !eventDescription) {
+        const cleanName = sanitizeCapitalize(eventName);
+        const cleanDesc = sanitizeText(eventDescription);
+
+        if (!cleanName || !eventDate || !cleanDesc) {
             setError('Nombre, Fecha y Descripción del evento son obligatorios.');
             return;
         }
 
         const eventData = {
-            eventName,
+            eventName: cleanName,
             eventDate,
-            eventDescription,
+            eventDescription: cleanDesc,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };

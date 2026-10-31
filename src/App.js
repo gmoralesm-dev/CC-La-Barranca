@@ -11,6 +11,7 @@ import Dashboard from './components/Dashboard';
 import Comunicados from './components/Comunicados';
 import SettingsPanel from './components/SettingsPanel';
 import logo from './assets/logo-cc-la-barranca.png';
+import { sanitizeCapitalize, sanitizeText } from './utils/validations';
 
 const App = () => {
     const [userId, setUserId] = useState(null);
@@ -97,8 +98,9 @@ const App = () => {
     const handleSignIn = async (e) => {
         e.preventDefault();
         setError('');
+        const cleanEmail = email.trim().toLowerCase();
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInWithEmailAndPassword(auth, cleanEmail, password);
         } catch (e) {
             setError('Credenciales inválidas: ' + e.message);
         }
@@ -118,7 +120,8 @@ const App = () => {
 
     const handleGuestLogin = async (e) => {
         e.preventDefault();
-        if (!guestName.trim()) {
+        const cleanGuestName = sanitizeCapitalize(guestName);
+        if (!cleanGuestName) {
             setError('Ingresa tu nombre.');
             return;
         }
@@ -126,7 +129,8 @@ const App = () => {
             const userCredential = await signInAnonymously(auth);
             await setDoc(doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, userCredential.user.uid), {
                 email: `invitado_${userCredential.user.uid}@comunidad.local`,
-                fullName: guestName,
+                fullName: cleanGuestName,
+                displayName: cleanGuestName,
                 role: 'guest',
                 createdAt: new Date()
             });
