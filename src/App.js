@@ -272,7 +272,7 @@ const App = () => {
                     {isManagerRole() && (
                         <>
                             <button onClick={() => setCurrentPage('families')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'families' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Familias</button>
-                            <button onClick={() => setCurrentPage('deliveries')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'deliveries' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Entregas</button>
+                            <button onClick={() => setCurrentPage('deliveries')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'deliveries' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Eventos</button>
                             <button onClick={() => setCurrentPage('reports')} className={`px-4 py-2 rounded-full text-sm font-bold transition ${currentPage === 'reports' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>Reportes</button>
                         </>
                     )}
