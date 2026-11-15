@@ -1,0 +1,1518 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defensa de proyecto — SIW-CC | Consejo Comunal La Barranca</title>
+
+<!-- Reveal.js Base Styles -->
+<link rel="stylesheet" href="reveal-dist/dist/reveal.css">
+<link rel="stylesheet" href="reveal-dist/dist/theme/white.css" id="theme">
+<link rel="stylesheet" href="reveal-dist/plugin/highlight/monokai.css">
+
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --cc-brown: #6B4226;
+    --cc-brown-dark: #4A2E1A;
+    --cc-terracotta: #C9713F;
+    --cc-cream: #F5F0EA;
+    --cc-cream-light: #FAF7F2;
+    --cc-charcoal: #2E2A26;
+    --cc-green: #2E7D32;
+    --cc-blue: #1565C0;
+    --cc-gray-border: #D8CEBE;
+  }
+
+  .reveal {
+    font-family: "Georgia", "Cambria", serif;
+    color: var(--cc-charcoal);
+  }
+
+  .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+    font-family: "Georgia", "Cambria", serif;
+    font-weight: 700;
+    color: var(--cc-brown);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .reveal .slides { text-align: left; }
+
+  /* Stacks are transparent wrappers: NEVER scroll the stack wrapper */
+  .reveal .slides > section.stack {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: visible !important;
+    pointer-events: none !important;
+    padding: 0 !important;
+  }
+
+  /* Actual slide pages (standalone slides AND inner vertical slides): scrollable with touchpad and mouse */
+  .reveal .slides > section:not(.stack),
+  .reveal .slides > section > section {
+    height: 100% !important;
+    max-height: 100% !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding: 18px 24px !important;
+    pointer-events: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cc-terracotta) rgba(107, 66, 38, 0.08);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Custom elegant scrollbar */
+  .reveal .slides section::-webkit-scrollbar,
+  .card::-webkit-scrollbar,
+  .reveal pre code::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .reveal .slides section::-webkit-scrollbar-track,
+  .card::-webkit-scrollbar-track,
+  .reveal pre code::-webkit-scrollbar-track {
+    background: rgba(107, 66, 38, 0.05);
+    border-radius: 4px;
+  }
+  .reveal .slides section::-webkit-scrollbar-thumb,
+  .card::-webkit-scrollbar-thumb,
+  .reveal pre code::-webkit-scrollbar-thumb {
+    background: var(--cc-terracotta);
+    border-radius: 4px;
+  }
+  .reveal .slides section::-webkit-scrollbar-thumb:hover,
+  .card::-webkit-scrollbar-thumb:hover,
+  .reveal pre code::-webkit-scrollbar-thumb:hover {
+    background: var(--cc-brown);
+  }
+
+  .reveal h2 { margin-bottom: 0.25em; font-size: 34px; line-height: 1.15; }
+  .reveal h3 { font-size: 24px; margin-bottom: 0.2em; }
+  .reveal > .slides > section > p { font-size: 0.65em; }
+
+  .subtitle {
+    color: var(--cc-terracotta);
+    font-size: 0.52em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.15em;
+    display: inline-block;
+  }
+
+  .sub-tag {
+    background: var(--cc-cream);
+    color: var(--cc-brown-dark);
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.45em;
+    font-weight: 600;
+    border: 1px solid var(--cc-gray-border);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* Title & Closing Special Slides */
+  .reveal .slides section.title-slide,
+  .reveal .slides section.closing-slide {
+    height: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 6% !important;
+    text-align: center !important;
+  }
+  .title-slide { background: var(--cc-brown); color: white !important; }
+  .title-slide h1 { color: white !important; font-size: 1.45em; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .title-slide .subtitle { color: var(--cc-cream); }
+  .title-slide .meta { color: var(--cc-cream); font-size: 0.44em; opacity: 0.95; line-height: 1.5; }
+  .title-slide .logo { width: 85px; margin-bottom: 0.3em; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); }
+
+  .closing-slide { background: var(--cc-brown); color: white !important; }
+  .closing-slide h1, .closing-slide h2 { color: white !important; }
+
+  /* Card Grids */
+  .card-grid { display: grid; gap: 0.45em; margin-top: 0.35em; }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--cc-cream);
+    border-radius: 8px;
+    padding: 0.55em 0.75em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border: 1px solid rgba(107, 66, 38, 0.12);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cc-terracotta) rgba(107, 66, 38, 0.08);
+  }
+  .card.highlight {
+    background: #FFFDF9;
+    border-left: 4px solid var(--cc-terracotta);
+  }
+  .card.accent {
+    background: #EFE8DF;
+    border-left: 4px solid var(--cc-brown);
+  }
+  .card .card-title {
+    margin: 0 0 0.2em 0;
+    color: var(--cc-brown);
+    font-size: 0.76em;
+    font-weight: 700;
+    text-transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card p { margin: 0; font-size: 0.54em; line-height: 1.35; color: var(--cc-charcoal); }
+
+  /* Badges & Pills */
+  .pill {
+    display: inline-block;
+    background: var(--cc-terracotta);
+    color: white;
+    border-radius: 999px;
+    padding: 0.18em 0.7em;
+    font-size: 0.48em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .pill.green { background: var(--cc-green); }
+  .pill.brown { background: var(--cc-brown); }
+  .pill.dark { background: var(--cc-charcoal); }
+
+  /* Numeric stats */
+  .stat { text-align: center; padding: 0.3em; background: var(--cc-cream); border-radius: 8px; }
+  .stat .num { font-size: 2.1em; font-weight: 700; color: var(--cc-terracotta); line-height: 1; }
+  .stat .label { font-size: 0.52em; color: var(--cc-brown); margin-top: 0.25em; font-weight: 600; }
+
+  /* Lists & Tables */
+  .reveal ul { font-size: 0.68em; line-height: 1.45; margin: 0.3em 0 0.5em 1.2em; }
+  .reveal li { margin-bottom: 0.28em; }
+  .reveal p { font-size: 0.68em; line-height: 1.4; }
+  .reveal table {
+    font-size: 0.56em;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.4em;
+    background: var(--cc-cream-light);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .reveal table th {
+    background: #EAE2D7;
+    color: var(--cc-brown-dark);
+    font-weight: 700;
+    border-bottom: 2px solid var(--cc-terracotta);
+    padding: 0.4em 0.5em;
+    text-align: left;
+  }
+  .reveal table td {
+    border-bottom: 1px solid var(--cc-gray-border);
+    padding: 0.38em 0.5em;
+    vertical-align: middle;
+  }
+  .reveal table tr:last-child td { border-bottom: none; }
+
+  /* Timeline */
+  .timeline { display: flex; justify-content: space-between; margin-top: 0.8em; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; top: 18px; left: 6%; right: 6%; height: 3px;
+    background: var(--cc-terracotta); z-index: 0;
+  }
+  .tstep { text-align: center; flex: 1; position: relative; z-index: 1; padding: 0 4px; }
+  .tstep .dot {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--cc-brown); color: white;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35em auto;
+    font-size: 0.65em; font-weight: 700; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .tstep.active .dot { background: var(--cc-terracotta); }
+  .tstep .tlabel { font-size: 0.54em; font-weight: 700; color: var(--cc-brown); }
+  .tstep .tdesc { font-size: 0.44em; color: var(--cc-charcoal); line-height: 1.25; margin-top: 0.15em; }
+
+  /* Icon Rows */
+  .icon-row { display: flex; align-items: center; gap: 0.6em; margin-bottom: 0.32em; }
+  .icon-row p { font-size: 0.62em; margin: 0; line-height: 1.35; }
+  .icon-row .bullet {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--cc-terracotta);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.58em; flex-shrink: 0;
+  }
+  .icon-row .bullet.check { background: var(--cc-green); }
+
+  /* Image Containers */
+  .img-showcase {
+    display: flex;
+    gap: 0.8em;
+    align-items: center;
+    margin-top: 0.4em;
+  }
+  .img-frame {
+    background: white;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    border: 1px solid var(--cc-gray-border);
+  }
+  .img-frame img {
+    display: block;
+    width: 100%;
+    max-height: 350px;
+    object-fit: contain;
+    border-radius: 4px;
+    margin: 0 !important;
+  }
+  .img-caption {
+    font-size: 0.44em;
+    color: #666;
+    margin-top: 0.3em;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Code presentation */
+  .reveal pre {
+    width: 100%;
+    margin: 0.3em 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    font-size: 0.46em;
+  }
+  .reveal pre code {
+    max-height: 420px;
+    padding: 0.8em 1em;
+    border-radius: 6px;
+    line-height: 1.35;
+  }
+
+  .footnote { font-size: 0.42em; color: #777; margin-top: 0.7em; font-style: italic; }
+  .alert-box {
+    background: #FFF3CD;
+    border-left: 4px solid #FFA000;
+    padding: 0.4em 0.8em;
+    border-radius: 4px;
+    margin-top: 0.4em;
+  }
+  .alert-box p { margin: 0; font-size: 0.52em; color: #856404; }
+
+  /* Split Layouts */
+  .split-layout { display: flex; gap: 0.8em; align-items: stretch; margin-top: 0.4em; }
+  .split-left { flex: 1.2; }
+  .split-right { flex: 0.8; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <!-- ===================================================================================
+       1. PORTADA Y PRESENTACIÓN INSTITUCIONAL
+       Fuente: main.tex (Portada, Razón Social y Equipo de Grado)
+       =================================================================================== -->
+  <section class="title-slide">
+    <img class="logo" src="img/logo.png" alt="Logo CC La Barranca">
+    <div class="subtitle" style="font-size:0.35em; line-height:1.4;">
+      REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
+      UNIVERSIDAD POLITÉCNICA TERRITORIAL DEL ESTADO TRUJILLO "MARIO BRICEÑO IRAGORRY"<br>
+      PROGRAMA NACIONAL DE FORMACIÓN EN INFORMÁTICA (PNFI) — TRAYECTO III
+    </div>
+    <h1 style="font-size:0.75em; line-height:1.25; margin:0.4em 0 0.1em 0;">
+      Sistema de Información Web para la Gestión Administrativa<br>
+      del Consejo Comunal "La Barranca"
+    </h1>
+    <p style="font-size:0.46em; color:var(--cc-cream); margin:0.3em 0 0 0; font-weight:600;">
+      Aplicación de los Marcos Metodológicos Propios LAZY y LOL
+    </p>
+    <div class="meta" style="margin-top:0.9em;">
+      <strong>Autores:</strong> Gabriel Andrés Morales Mago &nbsp;·&nbsp; Richard Godoy &nbsp;·&nbsp; Josué Abrahan Ortuño Quintero<br>
+      <strong>Docente Asesor:</strong> Ing. Luis Colmenares &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Rep. Institucional:</strong> Ing. Carlos Pineda &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Rep. Comunitario:</strong> Mgtr. Evelyn Hackett<br>
+      <span style="font-size:0.9em; opacity:0.85;">Trujillo, Octubre 2026</span>
+    </div>
+    <aside class="notes">
+      Buenos días a los miembros del jurado evaluador, docente asesor, representantes institucionales y comunitarios. Presentamos la defensa del Proyecto Socio-Tecnológico: Sistema de Información Web para el Consejo Comunal La Barranca.
+    </aside>
+  </section>
+
+  <!-- ===================================================================================
+       2. AGENDA DE LA DEFENSA
+       Fuente: Estructura temática de main.tex (Partes I a V)
+       =================================================================================== -->
+  <section>
+    <div class="subtitle">HOJA DE RUTA</div>
+    <h2>Contenido de la defensa</h2>
+    <div class="card-grid cols-3" style="margin-top:0.45em;">
+      <div class="card fragment fade-up">
+        <div class="card-title">1. Diagnóstico y Contexto Comunitario</div>
+        <p>Realidad operativa del CC La Barranca, jerarquización cuantitativa y árboles de problemas/objetivos.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <div class="card-title">2. Objetivos y Fundamentos</div>
+        <p>Objetivo general, específicos, justificación teórica/técnica y marco legal (CRBV, LOCTI, PNFI).</p>
+      </div>
+      <div class="card fragment fade-up">
+        <div class="card-title">3. Marco Metodológico LAZY</div>
+        <p>Investigación de campo etnográfica y la <em>Bitácora de Cruce</em> como puente formal hacia el desarrollo.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <div class="card-title">4. Marco Metodológico LOL</div>
+        <p>Pilares <em>Logic, Oversight, Layering</em>, iteraciones, cronograma y roles del equipo.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <div class="card-title">5. Arquitectura, Datos y Seguridad</div>
+        <p>React 19 SPA + Firebase BaaS, modelo NoSQL en Firestore, RBAC y mitigación de amenazas STRIDE.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <div class="card-title">6. Demostración y Validación</div>
+        <p>Tour por los módulos reales, suite de pruebas Jest (43/43), pruebas UAT con la vocera y costos del proyecto.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================================
+       3. BLOQUE I: DIAGNÓSTICO SITUACIONAL Y CONTEXTO (Sección Vertical)
+       Fuente: main.tex Líneas 111-357 (Parte I)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 3.1: Contexto Comunitario y Organigrama -->
+    <section>
+      <div class="subtitle">PARTE I: DIAGNÓSTICO SITUACIONAL</div>
+      <h2>Consejo Comunal "La Barranca"</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <p><strong>Ubicación:</strong> Sector La Barranca, Parroquia Matriz, Municipio Trujillo, Estado Trujillo.</p>
+          <div class="card highlight" style="margin-top:0.4em;">
+            <div class="card-title">Naturaleza y Misión Comunitaria</div>
+            <p>Instancia de articulación y participación popular regida por la <em>Ley Orgánica de los Consejos Comunales</em>. Su misión es la autogestión, registro censal y distribución equitativa de beneficios sociales para elevar la calidad de vida de sus habitantes.</p>
+          </div>
+          <div class="card" style="margin-top:0.4em;">
+            <div class="card-title">Estructura Operativa</div>
+            <p>Se compone de la <strong>Unidad Ejecutiva</strong>, <strong>Unidad Administrativa y Financiera</strong> y <strong>Contraloría Social</strong>, coordinadas directamente por la Vocera Principal y los líderes de calle.</p>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="img-frame">
+            <img src="img/organigrama.png" alt="Organigrama CC La Barranca">
+          </div>
+          <div class="img-caption">Figura 1: Organigrama del Consejo Comunal La Barranca (Autores, 2026).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3.2: El Problema y Puntos de Dolor -->
+    <section>
+      <div class="subtitle">DIAGNÓSTICO SITUACIONAL</div>
+      <h2>Uso ineficiente de herramientas tecnológicas</h2>
+      <p>La gestión comunitaria dependía exclusivamente de registros físicos en cuadernos y anotaciones manuales, generando severas limitaciones operativas:</p>
+      <div class="card-grid cols-2" style="margin-top:0.5em;">
+        <div class="card fragment fade-up">
+          <div class="card-title">1. Pérdida y duplicidad de datos</div>
+          <p>Deterioro o extravío de hojas censales; datos desactualizados de los integrantes familiares sin historial de cambios.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">2. Falta de trazabilidad en beneficios</div>
+          <p>Imposibilidad de verificar qué familias recibieron bolsas CLAP o ayudas en jornadas específicas.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">3. Sobrecarga administrativa</div>
+          <p>Voceros dedicaban horas a transcribir listas manualmente para cada evento y asamblea.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">4. Asimetría e informalidad informativa</div>
+          <p>Comunicados perdidos en cadenas de mensajería; barreras para una verdadera contraloría social.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3.3: Jerarquización Cuantitativa de Problemas -->
+    <section>
+      <div class="subtitle">DIAGNÓSTICO CUANTITATIVO</div>
+      <h2>Priorización y selección del problema central</h2>
+      <p>Conforme al Cuadro 1 y 2 de la investigación, se evaluaron los problemas detectados en función de su <strong>Magnitud</strong> y <strong>Posibilidad de Solución</strong> (Escala 1 a 3):</p>
+      <table class="fragment fade-up">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Problema Percibido</th>
+            <th>Magnitud</th>
+            <th>Posib. Solución</th>
+            <th>Puntuación</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>P1</strong></td>
+            <td>Falta de herramientas tecnológicas accesibles para voceros</td>
+            <td>1 (Bajo)</td>
+            <td>1 (Bajo)</td>
+            <td>2 pts</td>
+            <td>Descartado</td>
+          </tr>
+          <tr>
+            <td><strong>P2</strong></td>
+            <td>Falta de capacitación en manejo de aplicaciones tecnológicas</td>
+            <td>2 (Medio)</td>
+            <td>2 (Medio)</td>
+            <td>4 pts</td>
+            <td>Secundario</td>
+          </tr>
+          <tr>
+            <td><strong>P3</strong></td>
+            <td>Ausencia de mecanismos de retroalimentación comunitaria</td>
+            <td>2 (Medio)</td>
+            <td>2 (Medio)</td>
+            <td>4 pts</td>
+            <td>Secundario</td>
+          </tr>
+          <tr style="background:#FFEAD9; font-weight:bold;">
+            <td><strong style="color:var(--cc-terracotta);">P4</strong></td>
+            <td><strong>Falta de un sistema de información web para la gestión administrativa</strong></td>
+            <td>3 (Alto)</td>
+            <td>3 (Alto)</td>
+            <td><span class="pill">6 pts</span></td>
+            <td><strong style="color:var(--cc-green);">Problema Central Seleccionado</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="footnote">Jerarquía resultante: P4 (6 pts) > P2 = P3 (4 pts) > P1 (2 pts). El costo fue homogéneamente accesible, constituyendo P4 el factor determinante.</p>
+    </section>
+
+    <!-- Slide 3.4: Árboles de Problemas y Objetivos -->
+    <section>
+      <div class="subtitle">MODELADO CONCEPTUAL</div>
+      <h2>Árbol de Problemas y de Objetivos</h2>
+      <div style="display:flex; gap:0.6em; align-items:flex-start; margin-top:0.4em;">
+        <div style="flex:1;" class="img-frame">
+          <img src="img/arbol_p-1.png" alt="Árbol de Problemas">
+          <div class="img-caption">Causas raíz: dispersión documental, métodos manuales y canales informales.</div>
+        </div>
+        <div style="flex:1;" class="img-frame">
+          <img src="img/arbol_s-1.png" alt="Árbol de Objetivos">
+          <div class="img-caption">Fines: digitalización, trazabilidad inalterable y empoderamiento comunal.</div>
+        </div>
+      </div>
+      <p class="footnote">De cada causa raíz diagnosticada a la izquierda se derivó un componente operativo y un objetivo de desarrollo a la derecha.</p>
+    </section>
+
+    <!-- Slide 3.5: Análisis Multicriterio de Alternativas -->
+    <section>
+      <div class="subtitle">EVALUACIÓN DE ALTERNATIVAS</div>
+      <h2>Matriz de Decisión Multicriterio</h2>
+      <p>Se ponderaron tres alternativas viables bajo cuatro criterios ponderados de 1 a 5 (Cuadro 4 de la memoria):</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Alternativa</th>
+            <th>Tiempo</th>
+            <th>Costo</th>
+            <th>Impacto</th>
+            <th>Factibilidad</th>
+            <th>Total</th>
+            <th>Decisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#FFF3E0; font-weight:bold;">
+            <td><strong>Sistema de Información Web (SIW)</strong></td>
+            <td>3</td>
+            <td>2</td>
+            <td>5</td>
+            <td>5</td>
+            <td><span class="pill">15 pts</span></td>
+            <td><strong>Seleccionada (Mayor impacto y factibilidad)</strong></td>
+          </tr>
+          <tr>
+            <td>Red Social Comunitaria CC</td>
+            <td>5</td>
+            <td>3</td>
+            <td>5</td>
+            <td>1</td>
+            <td>14 pts</td>
+            <td>Inviable por baja factibilidad en el contexto</td>
+          </tr>
+          <tr>
+            <td>Capacitación ofimática a voceros</td>
+            <td>3</td>
+            <td>2</td>
+            <td>5</td>
+            <td>3</td>
+            <td>13 pts</td>
+            <td>No resuelve la dispersión de datos ni la trazabilidad</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="alert-box" style="margin-top:0.6em;">
+        <p><strong>Conclusión del análisis:</strong> El SIW ofrece acceso ubicuo sin requerir servidores locales ni mantenimiento de infraestructura física de alto costo en la comunidad.</p>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       4. BLOQUE II: OBJETIVOS, JUSTIFICACIÓN Y MARCO LEGAL (Sección Vertical)
+       Fuente: main.tex Líneas 358-477 (Parte I y II)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 4.1: Objetivos del Proyecto -->
+    <section>
+      <div class="subtitle">PROPÓSITO ACADÉMICO Y OPERATIVO</div>
+      <h2>Objetivos de la Investigación</h2>
+      <div class="card highlight" style="margin-bottom:0.4em;">
+        <div class="card-title">Objetivo General</div>
+        <p style="font-size:0.62em; font-weight:600; line-height:1.4;">
+          Desarrollar un Sistema de Información Web para la gestión administrativa del Consejo Comunal "La Barranca", que automatice el registro de familias, el control de la distribución de beneficios y la generación de reportes estadísticos, aplicando los marcos metodológicos propios LAZY y LOL.
+        </p>
+      </div>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 1</span> Requisitos</div>
+          <p>Determinar los requerimientos funcionales y no funcionales mediante el marco analítico <strong>LAZY</strong> y la Bitácora de Cruce.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 2</span> Diseño</div>
+          <p>Diseñar la arquitectura lógica, el modelo documental NoSQL y la seguridad del sistema aplicando el principio <strong>Logic</strong>.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 3</span> Implantación</div>
+          <p>Construir, probar y desplegar incrementalmente el software bajo los principios <strong>Layering</strong> y <strong>Oversight</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4.2: Justificación e Impacto -->
+    <section>
+      <div class="subtitle">PERTINENCIA DE LA PROPUESTA</div>
+      <h2>Justificación e impacto social</h2>
+      <div class="card-grid cols-3">
+        <div class="card">
+          <div class="card-title">Justificación Teórica</div>
+          <p>Se fundamenta en la <strong>Teoría General de Sistemas</strong> (Bertalanffy, 1968) y la conceptualización de Sistemas de Información (Laudon y Laudon, 2012) como engranajes de entrada, procesamiento y salida para la toma de decisiones certeras.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Justificación Técnica</div>
+          <p>Adopción del stack <strong>React 19 + Firebase (BaaS)</strong>. Permite interfaces reactivas, persistencia NoSQL en tiempo real, autenticación delegada y alojamiento de coste cero bajo el plan gratuito de Google.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Impacto Social</div>
+          <p>Empodera directamente a más de <strong>centenares de familias</strong> del sector La Barranca, garantizando equidad en asignación de insumos, transparencia en rendición de cuentas y auditoría ciudadana.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4.3: Marco Legal y Articulación PNFI -->
+    <section>
+      <div class="subtitle">SUSTENTO JURÍDICO E INSTITUCIONAL</div>
+      <h2>Fundamentación legal y vinculación PNFI</h2>
+      <div class="card-grid cols-2">
+        <div class="card">
+          <div class="card-title">Constitución de la República (CRBV)</div>
+          <ul>
+            <li><strong>Art. 102 y 103:</strong> Educación como derecho humano e igualdad de oportunidades.</li>
+            <li><strong>Art. 110:</strong> Interés público de la ciencia, la tecnología y los servicios de información como instrumentos de soberanía nacional.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">Leyes Orgánicas y Decretos</div>
+          <ul>
+            <li><strong>LOCTI (Arts. 1, 2, 5, 11):</strong> Aplicación de tecnologías para resolver necesidades populares.</li>
+            <li><strong>Ley Orgánica de los Consejos Comunales (2009):</strong> Principios de transparencia y contraloría social.</li>
+            <li><strong>Decreto Ley de Intercambio Electrónico de Datos (2012).</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card accent" style="margin-top:0.4em;">
+        <div class="card-title">Alineación con el PNFI (UPTTMBI)</div>
+        <p><strong>Línea de Investigación:</strong> Sistemas de Información y Modelado de Datos.<br>
+           <strong>Área de Conocimiento:</strong> Programación e Ingeniería del Software (Unidades: Base de Datos, Programación e Ing. de Software).</p>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       5. BLOQUE III: MARCO METODOLÓGICO LAZY & BITÁCORA DE CRUCE (Sección Vertical)
+       Fuente: main.tex Líneas 733-800 y Cuadro de Bitácora de Cruce (Líneas 504-530)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 5.1: Modalidad y Técnicas de Campo -->
+    <section>
+      <div class="subtitle">PARTE III: MARCO METODOLÓGICO</div>
+      <h2>Investigación de campo y técnicas empíricas</h2>
+      <div class="card-grid cols-3">
+        <div class="card">
+          <div class="card-title">Modalidad Metodológica</div>
+          <p>Investigación de campo estructurada por el marco propio <strong>LAZY</strong>, orientada a la creación de una <em>Tecnología Social</em> (ITS, 2004) contextualizada a la realidad comunal venezolana.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Tipo y Enfoque</div>
+          <p><strong>Descriptiva</strong> (Arias, 2012) con enfoque <strong>mixto</strong>: cualitativo en la inmersión diagnóstica y cuantitativo en la captura de métricas del censo familiar.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Técnicas e Instrumentos</div>
+          <p><strong>Observación Directa:</strong> Guía de campo y listas de chequeo.<br>
+             <strong>Entrevistas no estructuradas:</strong> Conversaciones directas con voceros.<br>
+             <strong>Análisis Documental:</strong> Revisión de censos físicos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5.2: Las 4 Fases de LAZY -->
+    <section>
+      <div class="subtitle">MARCO ANALÍTICO PROPIO</div>
+      <h2>Las cuatro fases del marco LAZY</h2>
+      <p>Propuesto por Morales (2026) para cerrar la brecha entre el trabajo etnográfico comunitario y la especificación de software:</p>
+      <div class="timeline" style="margin-top:1.2em;">
+        <div class="tstep fragment fade-up">
+          <div class="dot">L</div>
+          <div class="tlabel">Listen</div>
+          <div class="tdesc">Inmersión abierta y observación directa sin preconcepciones técnicas en la comunidad.</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">A</div>
+          <div class="tlabel">Analyze</div>
+          <div class="tdesc">Extracción de patrones recurrentes y cuellos de botella en cuadernos y listas.</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">Z</div>
+          <div class="tlabel">Zoom</div>
+          <div class="tdesc">Priorización focalizada con actores clave (identidad visual, censo y entregas CLAP).</div>
+        </div>
+        <div class="tstep fragment fade-up active">
+          <div class="dot">Y</div>
+          <div class="tlabel">Yield</div>
+          <div class="tdesc">Consolidación formal en la <strong>Bitácora de Cruce</strong> (documento de transferencia hacia LOL).</div>
+        </div>
+      </div>
+      <div class="footnote" style="margin-top:2em;">
+        *Sustituye la especificación ambigua de Historias de Usuario aisladas por unidades de requerimiento sustentadas en evidencia comunitaria directa.
+      </div>
+    </section>
+
+    <!-- Slide 5.3: La Bitácora de Cruce -->
+    <section>
+      <div class="subtitle">EL PUENTE ENTRE INVESTIGACIÓN Y DESARROLLO</div>
+      <h2>La Bitácora de Cruce (Yield)</h2>
+      <p>Documento de Transferencia Unificado: vincula cada Requisito Funcional (RF) directamente con su Requisito No Funcional (RNF) asociado:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Módulo</th>
+            <th>Requisito Funcional (RF)</th>
+            <th>Requisito No Funcional (RNF) Asociado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-00</strong></td>
+            <td>Autenticación</td>
+            <td>Acceso vía correo/clave y modo invitado. Validación de roles en servidor.</td>
+            <td><strong>Seguridad:</strong> Rechazo de peticiones no autenticadas en Firestore.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-01</strong></td>
+            <td>Gestión de Familias</td>
+            <td>Registro integral de núcleo y miembros; no duplicidad de cédula.</td>
+            <td><strong>Usabilidad:</strong> Persistencia en vivo sin recargas de página.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-02</strong></td>
+            <td>Gestión de Eventos</td>
+            <td>Programación de jornadas comunitarias con fecha y detalle.</td>
+            <td><strong>Seguridad:</strong> Restricción exclusiva a roles gestores (<code>role</code> en <code>users/{uid}</code>).</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-03</strong></td>
+            <td>Registro de Beneficios</td>
+            <td>Asignación de recepción ligando familia, receptor y evento.</td>
+            <td><strong>Trazabilidad:</strong> Timestamp de servidor (inmutable por cliente).</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-04</strong></td>
+            <td>Constancias</td>
+            <td>Emisión de comprobantes y actas de jornada descargables.</td>
+            <td><strong>Integridad:</strong> Datos derivados directamente de <code>receipts</code>.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-05</strong></td>
+            <td>Reportes</td>
+            <td>Cálculo demográfico, género y vulnerabilidad en tiempo real.</td>
+            <td><strong>Rendimiento:</strong> Sincronización reactiva mediante <code>onSnapshot</code>.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">YLD-06</strong></td>
+            <td>Comunicados</td>
+            <td>Publicación de avisos comunitarios con interacción abierta.</td>
+            <td><strong>Disponibilidad:</strong> Lectura pública libre sin autenticación.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       6. BLOQUE IV: METODOLOGÍA DE DESARROLLO LOL (Sección Vertical)
+       Fuente: main.tex Líneas 801-960 (Metodología de Desarrollo LOL)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 6.1: Justificación del Marco LOL -->
+    <section>
+      <div class="subtitle">MARCO DE DESARROLLO PROPIO</div>
+      <h2>¿Por qué LOL frente a metodologías tradicionales?</h2>
+      <div class="card-grid cols-2">
+        <div class="card">
+          <div class="card-title">Límites de Scrum / XP / RUP en PSI/T</div>
+          <ul>
+            <li>Diseñadas para corporaciones con presupuestos altos y grandes equipos.</li>
+            <li>Generan burocracia documental inaccesible para la comunidad.</li>
+            <li>Provocan desajuste entre el diagnóstico social y la ejecución de código.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">Respuesta de Ingeniería: Marco LOL</div>
+          <ul>
+            <li>Adaptación ágil, pragmática y ligera para el contexto comunal venezolano.</li>
+            <li>Enfoque de <em>Complejidad Diferida</em>: decisiones técnicas justificadas.</li>
+            <li>Supervisión continua (<em>Oversight</em>) integrando auditoría de pares y pruebas.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footnote">
+        Inspirado en la necesidad de adaptación contextual que motivó a Kent Beck con XP (Beck et al., 2001).
+      </div>
+    </section>
+
+    <!-- Slide 6.2: Los Tres Pilares de LOL -->
+    <section>
+      <div class="subtitle">MARCO LOL</div>
+      <h2>Los Tres Pilares Metodológicos</h2>
+      <div class="card-grid cols-3" style="margin-top:0.8em;">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">L</span> Logic</div>
+          <p><strong>Decisiones deliberadas y fundamentadas.</strong> Antes de codificar, se diseña el modelo mental del sistema. Justificación del stack React + Firebase para evitar costos de infraestructura.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">O</span> Oversight</div>
+          <p><strong>Supervisión continua y auditoría técnica.</strong> Pruebas unitarias, suites automatizadas Jest, validación de reglas de base de datos y verificación de requerimientos en cada fase.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">L</span> Layering</div>
+          <p><strong>Construcción incremental por capas.</strong> Cada módulo se apoya estrictamente sobre una capa ya estabilizada y testeada, garantizando entregables de valor funcional permanente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6.3: Roles y Responsabilidades del Equipo -->
+    <section>
+      <div class="subtitle">GESTIÓN DE EQUIPO EN LOL</div>
+      <h2>Distribución de responsabilidades del equipo</h2>
+      <p>Organización del equipo de desarrollo según los tres principios de LOL (Cuadro 11 de la tesis):</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Componente LOL</th>
+            <th>Participante</th>
+            <th>Responsabilidad Específica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--cc-brown);">Logic</strong></td>
+            <td><strong>Gabriel Morales</strong></td>
+            <td>Análisis técnico, selección de arquitectura, modelado del árbol NoSQL y diseño de la lógica del sistema.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-terracotta);">Layering</strong></td>
+            <td><strong>Gabriel Morales</strong></td>
+            <td>Construcción modular de la interfaz React, integración de servicios Firebase, componentes y despliegue.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--cc-green);">Oversight (Auditores)</strong></td>
+            <td><strong>Richard Godoy &amp; Josué Abrahan Ortuño</strong></td>
+            <td>Auditoría de requerimientos de la Bitácora de Cruce, revisión de entregables por iteración, pruebas funcionales y validación con la comunidad.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 6.4: Cronograma de Iteraciones LOL -->
+    <section>
+      <div class="subtitle">CICLO DE VIDA DEL DESARROLLO</div>
+      <h2>Cronograma y fases de iteración</h2>
+      <p>18 días de desarrollo enfocado dentro del marco general de 60 días del proyecto socio-tecnológico:</p>
+      <div class="timeline" style="margin-top:1.2em;">
+        <div class="tstep fragment fade-up">
+          <div class="dot">0</div>
+          <div class="tlabel">Iteración 0</div>
+          <div class="tdesc">Días 1–4: Procesamiento de la Bitácora de Cruce, setup de Firebase y autenticación base.</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">1</div>
+          <div class="tlabel">Iteración 1</div>
+          <div class="tdesc">Días 5–10: Gestión de Familias, miembros y reglas de Firestore (YLD-01).</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">2</div>
+          <div class="tlabel">Iteración 2</div>
+          <div class="tdesc">Días 11–15: Gestión de Eventos, trazabilidad de Entregas y Reportes estadísticos (YLD-02/03/05).</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">3</div>
+          <div class="tlabel">Iteración 3</div>
+          <div class="tdesc">Días 16–18: Generador de Constancias PDF, Comunicados públicos y pruebas UAT finales (YLD-04/06).</div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       7. BLOQUE V: ARQUITECTURA, DATOS Y SEGURIDAD (Sección Vertical)
+       Fuente: main.tex Líneas 835-870, 975-1005 y CC La Barranca/firestore.rules / App.js
+       =================================================================================== -->
+  <section>
+    <!-- Slide 7.1: Stack y Arquitectura BaaS -->
+    <section>
+      <div class="subtitle">PARTE IV: PRODUCTO FINAL</div>
+      <h2>Arquitectura Tecnológica del SIW-CC</h2>
+      <div class="card-grid cols-2">
+        <div class="card">
+          <div class="card-title">Cliente (Frontend React 19 SPA)</div>
+          <ul>
+            <li><strong>React 19:</strong> Arquitectura basada en componentes reactivos y hooks desacoplados.</li>
+            <li><strong>Tailwind CSS:</strong> Diseño responsivo adaptable a laptops y dispositivos móviles comunitarios.</li>
+            <li><strong>html2canvas + jsPDF:</strong> Renderizado y emisión de constancias oficiales descargables sin dependencias de servidor.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">Backend as a Service (Firebase BaaS)</div>
+          <ul>
+            <li><strong>Cloud Firestore:</strong> Base de datos NoSQL documental con sincronización reactiva en tiempo real.</li>
+            <li><strong>Firebase Auth:</strong> Gestión segura de sesiones por correo/clave y credenciales anónimas para invitados.</li>
+            <li><strong>Firebase Hosting:</strong> Entrega global de contenido estático mediante CDN seguro con SSL automático.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="alert-box">
+        <p><strong>Principio de Complejidad Diferida:</strong> Cero costos de mantenimiento de servidores Linux propios, alta disponibilidad y soporte total dentro de la cuota gratuita (Spark Plan de Google).</p>
+      </div>
+    </section>
+
+    <!-- Slide 7.2: Árbol Documental NoSQL en Firestore -->
+    <section>
+      <div class="subtitle">MODELADO DE DATOS</div>
+      <h2>Árbol Documental NoSQL en Cloud Firestore</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <pre><code class="language-yaml" data-trim data-noescape>
+/Consejo-Comunal-La-Barranca/data/
+  ├── users/{userId}          # Rol, email, datos del vocero
+  ├── invitados/{guestId}      # Sesión temporal ligera (anónima)
+  ├── families/{familyId}      # Núcleo: jefe de familia, dirección, vulnerabilidad
+  │     ├── members/{memberId} # Datos individuales: edad, cédula, salud
+  │     └── receipts/{receiptId} # Trazabilidad: deliveryId, timestamp
+  ├── deliveries/{eventId}     # Jornadas: nombre, fecha, tipo de beneficio
+  └── comunicados/{comunicadoId} # Avisos comunitarios públicos
+        └── comments/{commentId} # Retroalimentación comunitaria
+          </code></pre>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Patrón de Acceso Optimizado</div>
+            <p><strong>¿Por qué <code>receipts</code> anida bajo <code>families</code>?</strong><br>
+            Porque la consulta prioritaria del Consejo Comunal es verificar <em>"¿qué beneficios ha recibido esta familia históricamente?"</em> en lugar de consultar la lista bruta del evento. El campo <code>deliveryId</code> preserva la integridad relacional sin duplicidad de datos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7.3: Control de Acceso y Roles (RBAC) -->
+    <section>
+      <div class="subtitle">SEGURIDAD Y AUTORIZACIÓN</div>
+      <h2>Control de Acceso Basado en Roles (RBAC)</h2>
+      <p>Diseño de permisos según la estructura organizativa comunitaria (Cuadro 10):</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Rol Organizacional</th>
+            <th>Mecanismo Auth</th>
+            <th>Nivel Técnico</th>
+            <th>Alcance Operativo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Administrador</strong></td>
+            <td>Email / Password</td>
+            <td><code>role == 'administrador'</code></td>
+            <td>Acceso total a todos los módulos y gestión de perfiles.</td>
+          </tr>
+          <tr>
+            <td><strong>Vocera Principal</strong></td>
+            <td>Email / Password</td>
+            <td><code>role == 'vocera_principal'</code></td>
+            <td>Gestión de familias, eventos, constancias y estadísticas.</td>
+          </tr>
+          <tr>
+            <td><strong>Líder de Calle</strong></td>
+            <td>Email / Password</td>
+            <td><code>role == 'lider_de_calle'</code></td>
+            <td>Actualización de fichas censales y verificación de entregas.</td>
+          </tr>
+          <tr style="background:#ECEFF1;">
+            <td><strong>Invitado (Comunidad)</strong></td>
+            <td>Autenticación Anónima</td>
+            <td><code>role == 'guest'</code></td>
+            <td>Lectura de comunicados. Para comentar se exige cuenta verificada.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="footnote">El nivel técnico es el campo <code>role</code> del documento <code>users/{uid}</code>, y se evalúa en las reglas de Firestore (<code>getUserRole()</code>), no en el cliente. Las funciones <code>isManagerRole()</code> del frontend solo muestran u ocultan interfaz. La distinción entre roles gestores es estrictamente organizacional: todos operan bajo la función unificada de gestión para garantizar operatividad continua en la comunidad.</p>
+    </section>
+
+    <!-- Slide 7.4: Reglas de Seguridad Firestore y STRIDE -->
+    <section>
+      <div class="subtitle">INGENIERÍA DE SEGURIDAD (OVERSIGHT)</div>
+      <h2>Reglas de Seguridad y Mitigación STRIDE</h2>
+      <p>La seguridad no reside en el navegador del cliente; se evalúa rígidamente en los servidores de Google. Extracto de <code>firestore.rules</code> desplegado (el archivo completo está en el repositorio; aquí se omiten las ramas de comunicados, constancias y reportes):</p>
+      <pre><code class="language-javascript" data-trim data-noescape>
+// Helper que consulta el rol verificado en la base de datos (Backend-driven)
+function getUserRole() {
+  return get(/databases/$(database)/documents/Consejo-Comunal-La-Barranca/data/users/$(request.auth.uid)).data.role;
+}
+
+function isManager() {
+  return request.auth != null && 
+    (getUserRole() == 'administrador' || getUserRole() == 'admin' || 
+     getUserRole() == 'lider_de_calle' || getUserRole() == 'vocera_principal');
+}
+
+// Censo Familiar y Entregas: Acceso blindado exclusivamente a gestores
+match /families/{familyId} {
+  allow read, write: if isManager();
+  match /members/{memberId} { allow read, write: if isManager(); }
+  match /receipts/{receiptId} { allow read, write: if isManager(); }
+}
+
+// Mitigación STRIDE: Previene escalada de privilegios (Elevation of Privilege)
+match /users/{userId} {
+  allow update: if request.auth != null && (
+    isManager() || (request.auth.uid == userId && request.resource.data.role == resource.data.role)
+  );
+}
+      </code></pre>
+      <p class="footnote">El usuario común no puede modificar su propio atributo <code>role</code> para elevar privilegios indebidamente.</p>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       8. BLOQUE VI: RECORRIDO Y DEMOSTRACIÓN DE MÓDULOS (Sección Vertical)
+       Fuente: main.tex Líneas 1006-1073 (Capturas 1 a 7) e Identidad Visual
+       =================================================================================== -->
+  <section>
+    <!-- Slide 8.1: Identidad Visual con Memoria Histórica -->
+    <section>
+      <div class="subtitle">DISEÑO UI/UX E IDENTIDAD</div>
+      <h2>Identidad visual y memoria histórica</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <p>Durante la fase <em>Zoom</em> de LAZY, la comunidad decidió que el logotipo institucional debía rescatar la <strong>Catedral de Trujillo</strong> en su fisonomía histórica original previa a la intervención municipal.</p>
+          <div class="card highlight" style="margin-top:0.4em;">
+            <div class="card-title">Rescate Histórico (Briceño-Iragorry, 2017)</div>
+            <p>La fachada colonial original fue saqueada e incendiada durante la incursión del filibustero francés <strong>Grammont de la Mothe en 1678</strong>. La comunidad y la Vocera Principal optaron por plasmar la memoria histórica en su imagen en vez del repintado actual.</p>
+          </div>
+        </div>
+        <div class="split-right" style="text-align:center;">
+          <div class="img-frame" style="padding:10px; display:inline-block;">
+            <img src="img/logo.png" alt="Logotipo Institucional" style="max-height:220px; width:auto;">
+          </div>
+          <div class="img-caption">Figura: Imagotipo institucional del Consejo Comunal La Barranca.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.2: Inicio de Sesión y Acceso Invitado -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA (YLD-00)</div>
+      <h2>Autenticación y Acceso de Invitados</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura1.png" alt="Pantalla de Acceso">
+          </div>
+          <div class="img-caption">Captura 1: Formulario con logo institucional y doble vía de ingreso.</div>
+        </div>
+        <div class="split-right">
+          <div class="card">
+            <div class="card-title">Características del Módulo</div>
+            <ul>
+              <li>Acceso administrativo mediante <strong>Email y Contraseña</strong> validados vía Firebase Auth.</li>
+              <li>Botón <strong>"Entrar como Invitado"</strong> que genera una credencial anónima temporal en la colección <code>/invitados</code>.</li>
+              <li>Manejo reactivo de errores: bloqueo de credenciales incorrectas y mensajes amigables.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.3: Dashboard Administrativo en Tiempo Real -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA</div>
+      <h2>Panel de Control (Dashboard) en vivo</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura2.png" alt="Dashboard Principal">
+          </div>
+          <div class="img-caption">Captura 2: Tablero con métricas clave y estado de Firestore.</div>
+        </div>
+        <div class="split-right">
+          <div class="card">
+            <div class="card-title">Información Centralizada</div>
+            <ul>
+              <li><strong>Contadores en vivo:</strong> Total de familias censadas, jornadas registradas y comunicados vigentes.</li>
+              <li><strong>Indicador de sincronización:</strong> Estado de conexión en tiempo real con Cloud Firestore.</li>
+              <li><strong>Año fiscal del censo:</strong> Control de período operativo del Consejo Comunal.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.4: Gestión de Familias e Integrantes -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA (YLD-01)</div>
+      <h2>Censo Familiar Digital e Integrantes</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura3.png" alt="Módulo de Familias">
+          </div>
+          <div class="img-caption">Captura 3: Formulario censal y listado interactivo de familias.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Funcionalidades Clave</div>
+            <ul>
+              <li>Registro del jefe de familia con dirección, teléfono y sector.</li>
+              <li>Sub-formulario dinámico para agregar integrantes con edad, parentesco y datos de salud.</li>
+              <li><strong>Validación estricta de Cédula:</strong> Previene la duplicación de personas en múltiples núcleos familiares.</li>
+              <li>Clasificación automática de vulnerabilidad social.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.5: Jornadas y Registro de Beneficios -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA (YLD-02 &amp; YLD-03)</div>
+      <h2>Gestión de Eventos y Trazabilidad de Entregas</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura4.png" alt="Eventos de Entrega">
+          </div>
+          <div class="img-caption">Captura 4: Calendario de jornadas comunitarias y registro de beneficiarios.</div>
+        </div>
+        <div class="split-right">
+          <div class="card">
+            <div class="card-title">Auditoría y Transparencia</div>
+            <ul>
+              <li>Planificación de jornadas de distribución (CLAP, gas, jornadas médicas).</li>
+              <li>Búsqueda rápida por cédula o familia para confirmar la entrega del beneficio.</li>
+              <li>Generación de recibo inmutable con <strong>timestamp del servidor</strong> para evitar adulteraciones posteriores.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.6: Reportes Estadísticos y Demografía -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA (YLD-05)</div>
+      <h2>Tablero Estadístico y Demografía en Tiempo Real</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura5.png" alt="Módulo de Reportes">
+          </div>
+          <div class="img-caption">Captura 5: Métricas poblacionales y distribución de vulnerabilidad.</div>
+        </div>
+        <div class="split-right">
+          <div class="card">
+            <div class="card-title">Inteligencia de Datos Comunitarios</div>
+            <ul>
+              <li>Distribución de población por género y grupos etarios (niños, adultos mayores, jóvenes).</li>
+              <li>Monitoreo de casos de vulnerabilidad médica y nutricional para atención prioritaria.</li>
+              <li>Cálculo demográfico consolidado mediante el hook <code>useReportData</code> (con métricas globales en vivo en Dashboard vía <code>onSnapshot</code>).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.7: Comunicados Públicos y Constancias PDF -->
+    <section>
+      <div class="subtitle">RECORRIDO DEL SISTEMA (YLD-04 &amp; YLD-06)</div>
+      <h2>Comunicados Comunitarios y Constancias</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura6.png" alt="Módulo de Comunicados">
+          </div>
+          <div class="img-caption">Captura 6: Tablón público de anuncios y retroalimentación vecinal.</div>
+        </div>
+        <div class="split-right">
+          <div class="card">
+            <div class="card-title">Módulos de Vinculación</div>
+            <ul>
+              <li><strong>Comunicados Abiertos:</strong> lectura pública sin requerir cuenta; comentar exige cuenta verificada (email verificado o Google) y el comentario queda identificado con su <code>authorId</code>.</li>
+              <li><strong>Emisión de Constancias (YLD-04):</strong> Generación instantánea en PDF mediante <code>CertificateGenerator.js</code> para certificar quién recibió y quién no en cada jornada.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8.8: Entorno Aislado de Pruebas (Oversight) -->
+    <section>
+      <div class="subtitle">PRUEBAS Y CALIDAD (OVERSIGHT)</div>
+      <h2>Firebase Emulator Suite (Entorno Local)</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura7.png" alt="Firebase Emulator Suite">
+          </div>
+          <div class="img-caption">Captura 7: Entorno de emulación local para Auth, Firestore y Hosting.</div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Desarrollo Aislado y Seguro</div>
+            <p>Conforme al principio <em>Oversight</em>, todos los cambios, scripts de migración y reglas de seguridad fueron validados exhaustivamente en puertos locales (Auth: 9099, Firestore: 8080, Hosting: 5000) antes de su publicación definitiva en producción.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       9. BLOQUE VII: VALIDACIÓN, EVALUACIÓN, CALIDAD Y COSTOS (Sección Vertical)
+       Fuente: main.tex Líneas 906-930 (Tests Jest), 1075-1144 (Costos), 1174-1191 (UAT)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 9.1: Pruebas Automatizadas Jest & RTL -->
+    <section>
+      <div class="subtitle">ASEGURAMIENTO DE LA CALIDAD</div>
+      <h2>Suite de Pruebas Automatizadas (Jest + RTL)</h2>
+      <p>Supervisión continua implementada bajo el principio <em>Oversight</em> para blindar la interfaz y la lógica de validación:</p>
+      <div class="card-grid cols-3" style="margin-top:0.6em;">
+        <div class="stat">
+          <div class="num">8 / 8</div>
+          <div class="label">Suites Ejecutadas (100%)</div>
+        </div>
+        <div class="stat">
+          <div class="num" style="color:var(--cc-green);">43 / 43</div>
+          <div class="label">Tests Aprobados (0 Fallos)</div>
+        </div>
+        <div class="stat">
+          <div class="num">2.39s</div>
+          <div class="label">Tiempo del run local (referencial)</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0.6em;">
+        <div class="card-title">Componentes y Módulos Cubiertos</div>
+        <p>43 tests repartidos en 8 suites: <code>App.test.js</code>, <code>FamilyManagement.test.js</code>, <code>MemberManagement.test.js</code>, <code>DeliveryEvents.test.js</code>, <code>Dashboard.test.js</code>, <code>Comunicados.test.js</code>, <code>CertificateGenerator.test.js</code> y <code>validations.test.js</code> (15 de validación). Aparte, 6 pruebas de reglas en el emulador (<code>test/firestore.rules.test.js</code>).</p>
+      </div>
+    </section>
+
+    <!-- Slide 9.2: Pruebas de Aceptación UAT con la Comunidad -->
+    <section>
+      <div class="subtitle">EVALUACIÓN Y SEGUIMIENTO</div>
+      <h2>Pruebas de Aceptación del Usuario (UAT)</h2>
+      <p>Sesiones de validación operativa realizadas con la Representante Comunitario (Mgtr. Evelyn Hackett) al cierre de cada iteración (Cuadro 12 de la memoria):</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Tarea Evaluada</th>
+            <th>Criterio de Éxito</th>
+            <th>Resultado</th>
+            <th>Valoración de la Vocera Principal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Registro de Núcleo Familiar</strong></td>
+            <td>Familia y miembros agregados en una sola vista sin recarga.</td>
+            <td><span class="pill green">Exitoso</span></td>
+            <td><strong>Aprobado</strong> — "Rápido, claro y evita que se pierdan las hojas".</td>
+          </tr>
+          <tr>
+            <td><strong>Creación de Jornada</strong></td>
+            <td>Nueva jornada creada y listada cronológicamente.</td>
+            <td><span class="pill green">Exitoso</span></td>
+            <td><strong>Aprobado</strong> — "Muy intuitivo para los voceros".</td>
+          </tr>
+          <tr>
+            <td><strong>Registro de Entrega</strong></td>
+            <td>Búsqueda ágil y asignación de beneficio individual.</td>
+            <td><span class="pill green">Exitoso</span></td>
+            <td><strong>Aprobado</strong> — "Evita reclamos y duplicados en la entrega".</td>
+          </tr>
+          <tr>
+            <td><strong>Emisión de Constancia</strong></td>
+            <td>Descarga instantánea del acta oficial en formato PDF.</td>
+            <td><span class="pill green">Exitoso</span></td>
+            <td><strong>Aprobado</strong> — "Formato formal y listo para firmar".</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 9.3: Presupuesto y Estimación Económica -->
+    <section>
+      <div class="subtitle">ESTIMACIÓN DE COSTOS</div>
+      <h2>Presupuesto Económico del Proyecto</h2>
+      <p>Estimación calculada a partir del esfuerzo real de ingeniería (60 días, 1 desarrollador líder y 2 auditores):</p>
+      <div class="card-grid cols-4">
+        <div class="stat">
+          <div class="num">$1,920</div>
+          <div class="label">Responsable Técnico<br>(240h a $8/h)</div>
+        </div>
+        <div class="stat">
+          <div class="num">$320</div>
+          <div class="label">Auditores de Calidad<br>(40h a $8/h)</div>
+        </div>
+        <div class="stat">
+          <div class="num">$96</div>
+          <div class="label">Identidad Visual<br>(12h a $8/h)</div>
+        </div>
+        <div class="stat">
+          <div class="num" style="color:var(--cc-brown);">$220</div>
+          <div class="label">Infraestructura<br>(Hardware + Dominio)</div>
+        </div>
+      </div>
+      <div class="card highlight" style="margin-top:0.6em;">
+        <div class="card-title">Costo Total del Proyecto: $2,556.00 USD</div>
+        <p><strong>Modelo de Financiamiento:</strong> 100% autofinanciado por el equipo investigador, respaldado con el acompañamiento institucional y metodológico de la UPTTMBI. Costo recurrente de nube: <strong>$0 USD</strong> gracias a la arquitectura basada en el nivel gratuito de Firebase.</p>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       10. BLOQUE VIII: CONCLUSIONES, LIMITACIONES Y RECOMENDACIONES (Sección Vertical)
+       Fuente: main.tex Líneas 1194-1294 (Parte V)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 10.1: Conclusiones por Objetivo -->
+    <section>
+      <div class="subtitle">PARTE V: CONCLUSIONES</div>
+      <h2>Cumplimiento de los Objetivos del Proyecto</h2>
+      <div class="card-grid cols-3">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 1</span> Requerimientos</div>
+          <p><strong>Logrado:</strong> El marco <strong>LAZY</strong> demostró efectividad etnográfica, traduciendo la necesidad comunal en la <em>Bitácora de Cruce</em> sin recurrir a supuestos abstractos.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 2</span> Diseño</div>
+          <p><strong>Logrado:</strong> Arquitectura SPA + BaaS estructurada bajo el pilar <strong>Logic</strong>, con un árbol NoSQL optimizado y control RBAC resistente a escalada de privilegios (reglas F1 sobre <code>users</code> e <code>invitados</code>).</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">OE 3</span> Implantación</div>
+          <p><strong>Logrado:</strong> Desarrollo incremental por capas (<strong>Layering</strong>), validación continua (<strong>Oversight</strong>) y despliegue público en Firebase Hosting.</p>
+        </div>
+      </div>
+      <div class="alert-box" style="margin-top:0.6em;">
+        <p><strong>Objetivo General Alcanzado:</strong> Se sustituyó la fragilidad del registro en papel por una plataforma digital centralizada, ágil, segura y plenamente operativa.</p>
+      </div>
+    </section>
+
+    <!-- Slide 10.2: Limitaciones del Estudio -->
+    <section>
+      <div class="subtitle">RIGUROSIDAD ACADÉMICA</div>
+      <h2>Limitaciones de la Investigación</h2>
+      <div class="card-grid cols-3">
+        <div class="card">
+          <div class="card-title">1. Estudio de Caso Único</div>
+          <p>La investigación se circunscribe exclusivamente al Consejo Comunal "La Barranca" (Trujillo). Por tanto, los hallazgos describen un fenómeno situado y no pretenden generalización estadística universal.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">2. Validación Específica</div>
+          <p>La pertinencia de las pantallas y flujos fue validada con los voceros de esta comunidad concreta, sin contrastación directa simultánea en otros consejos comunales.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">3. Alcance de los Marcos</div>
+          <p>Se demostró la sólida correspondencia de LAZY y LOL en este contexto particular; validar su aplicabilidad genérica en los PSI/T requerirá réplicas futuras.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10.3: Recomendaciones a Tres Niveles -->
+    <section>
+      <div class="subtitle">LÍNEAS DE ACCIÓN FUTURA</div>
+      <h2>Recomendaciones del Proyecto</h2>
+      <div class="card-grid cols-3">
+        <div class="card">
+          <div class="card-title">A la Comunidad</div>
+          <ul>
+            <li>Adoptar el SIW-CC como fuente única oficial para censos y entregas CLAP.</li>
+            <li>Capacitar multiplicadores para mantener el censo al día ante mudanzas.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">A Futuros Desarrolladores</div>
+          <ul>
+            <li>Evolucionar la app hacia una <strong>PWA</strong> para zonas con internet intermitente.</li>
+            <li>Incorporar alertas automáticas de jornadas y módulo de balance de fondos.</li>
+            <li>Expandir pruebas automatizadas E2E.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">A la UPTTMBI</div>
+          <ul>
+            <li>Difundir el proyecto como modelo de Tecnología Social replicable.</li>
+            <li>Consolidar un repositorio de proyectos socio-tecnológicos institucionales.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10.4: Código Abierto y Disponibilidad -->
+    <section>
+      <div class="subtitle">TRANSFERENCIA TECNOLÓGICA</div>
+      <h2>Disponibilidad del Código Fuente</h2>
+      <div class="card highlight" style="text-align:center; padding:1.2em;">
+        <div class="card-title" style="justify-content:center; font-size:1em; margin-bottom:0.4em;">
+          Software de Código Abierto (Open Source)
+        </div>
+        <p style="font-size:0.7em; line-height:1.5;">
+          El código fuente íntegro del sistema, sus suites de pruebas y la configuración de seguridad se encuentran alojados y versionados públicamente para auditoría de la comunidad académica:
+        </p>
+        <p style="margin-top:0.8em; font-size:0.85em; font-weight:bold;">
+          <a href="https://github.com/gmoralesm-dev/CC-La-Barranca" target="_blank" style="color:var(--cc-terracotta); text-decoration:underline;">
+            https://github.com/gmoralesm-dev/CC-La-Barranca
+          </a>
+        </p>
+        <div class="pill dark" style="margin-top:0.6em;">Repositorio Oficial GitHub · Licencia de Libre Consulta</div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       11. CIERRE Y RONDA DE PREGUNTAS
+       =================================================================================== -->
+  <section class="closing-slide">
+    <img src="img/logo.png" alt="Logo" style="width:75px; margin-bottom:0.4em; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));">
+    <h1 style="font-size:1.5em; margin:0.2em 0;">¡Muchas Gracias!</h1>
+    <p style="font-size:0.56em; color:var(--cc-cream); margin-top:0.4em;">
+      Agradecemos al Jurado Evaluador, al Docente Asesor Ing. Luis Colmenares,<br>
+      al Rep. Institucional Ing. Carlos Pineda, al Representante Comunitario: Mgtr. Evelyn Hackett y a la UPTTMBI.
+    </p>
+    <div style="margin-top:1.2em;" class="fragment fade-up">
+      <div class="pill brown" style="font-size:0.65em; padding:0.4em 1.2em; border:1px solid white;">
+        Sesión Abierta de Preguntas y Observaciones
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<!-- Reveal.js Scripts & Initialization -->
+<script src="reveal-dist/dist/reveal.js"></script>
+<script src="reveal-dist/plugin/notes/notes.js"></script>
+<script src="reveal-dist/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    width: 1100,
+    height: 700,
+    margin: 0.04,
+    center: false,
+    navigationMode: 'linear',
+    plugins: [ RevealNotes, RevealHighlight ]
+  });
+
+  // Auto-scroll newly revealed fragments into view
+  Reveal.on('fragmentshown', function(event) {
+    if (event.fragment) {
+      event.fragment.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  // Always reset scroll position to top when transitioning to any slide
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide) {
+      event.currentSlide.scrollTop = 0;
+    }
+  });
+
+  // Smart keyboard navigation: Scroll through content BEFORE jumping to next slide
+  window.addEventListener('keydown', function(e) {
+    // Ignore key combinations with ctrl, alt, meta
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+    const currentSlide = Reveal.getCurrentSlide();
+    if (!currentSlide) return;
+
+    const scrollStep = 180;
+    const scrollTolerance = 15;
+    const canScrollDown = (currentSlide.scrollHeight - currentSlide.scrollTop - currentSlide.clientHeight) > scrollTolerance;
+    const canScrollUp = currentSlide.scrollTop > scrollTolerance;
+    const hasNextFragment = Reveal.availableFragments && Reveal.availableFragments().next;
+    const hasPrevFragment = Reveal.availableFragments && Reveal.availableFragments().prev;
+
+    // Handle DOWN arrow, PAGE DOWN, or SPACE
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+      // 1. If there's an unrevealed fragment, let Reveal reveal it
+      if (hasNextFragment) {
+        return;
+      }
+      // 2. If the current slide has content below the fold, scroll down first!
+      if (canScrollDown) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSlide.scrollBy({ top: scrollStep, behavior: 'smooth' });
+        return;
+      }
+      // 3. Reached bottom: advance to next slide
+      e.preventDefault();
+      e.stopPropagation();
+      Reveal.next();
+      return;
+    }
+
+    // Handle UP arrow or PAGE UP
+    if (e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+      // 1. If the current slide can scroll up, scroll up first!
+      if (canScrollUp) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSlide.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+        return;
+      }
+      // 2. If there are fragments to hide on this slide, let Reveal hide them
+      if (hasPrevFragment) {
+        return;
+      }
+      // 3. Reached top: go back to previous slide
+      e.preventDefault();
+      e.stopPropagation();
+      Reveal.prev();
+      return;
+    }
+  }, true);
+</script>
+</body>
+</html>

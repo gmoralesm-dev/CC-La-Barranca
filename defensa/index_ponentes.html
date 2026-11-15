@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defensa de proyecto — SIW-CC | Consejo Comunal La Barranca</title>
+
+<!-- Reveal.js Base Styles -->
+<link rel="stylesheet" href="reveal-dist/dist/reveal.css">
+<link rel="stylesheet" href="reveal-dist/dist/theme/white.css" id="theme">
+<link rel="stylesheet" href="reveal-dist/plugin/highlight/monokai.css">
+
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --cc-brown: #6B4226;
+    --cc-brown-dark: #4A2E1A;
+    --cc-terracotta: #C9713F;
+    --cc-cream: #F5F0EA;
+    --cc-cream-light: #FAF7F2;
+    --cc-charcoal: #2E2A26;
+    --cc-green: #2E7D32;
+    --cc-blue: #1565C0;
+    --cc-gray-border: #D8CEBE;
+  }
+
+  .reveal {
+    font-family: "Georgia", "Cambria", serif;
+    color: var(--cc-charcoal);
+  }
+
+  .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+    font-family: "Georgia", "Cambria", serif;
+    font-weight: 700;
+    color: var(--cc-brown);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .reveal .slides { text-align: left; }
+
+  /* Stacks are transparent wrappers: NEVER scroll the stack wrapper */
+  .reveal .slides > section.stack {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: visible !important;
+    pointer-events: none !important;
+    padding: 0 !important;
+  }
+
+  /* Actual slide pages (standalone slides AND inner vertical slides): scrollable with touchpad and mouse */
+  .reveal .slides > section:not(.stack),
+  .reveal .slides > section > section {
+    height: 100% !important;
+    max-height: 100% !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding: 18px 24px !important;
+    pointer-events: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cc-terracotta) rgba(107, 66, 38, 0.08);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Custom elegant scrollbar */
+  .reveal .slides section::-webkit-scrollbar,
+  .card::-webkit-scrollbar,
+  .reveal pre code::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .reveal .slides section::-webkit-scrollbar-track,
+  .card::-webkit-scrollbar-track,
+  .reveal pre code::-webkit-scrollbar-track {
+    background: rgba(107, 66, 38, 0.05);
+    border-radius: 4px;
+  }
+  .reveal .slides section::-webkit-scrollbar-thumb,
+  .card::-webkit-scrollbar-thumb,
+  .reveal pre code::-webkit-scrollbar-thumb {
+    background: var(--cc-terracotta);
+    border-radius: 4px;
+  }
+  .reveal .slides section::-webkit-scrollbar-thumb:hover,
+  .card::-webkit-scrollbar-thumb:hover,
+  .reveal pre code::-webkit-scrollbar-thumb:hover {
+    background: var(--cc-brown);
+  }
+
+  .reveal h2 { margin-bottom: 0.25em; font-size: 34px; line-height: 1.15; }
+  .reveal h3 { font-size: 24px; margin-bottom: 0.2em; }
+  .reveal > .slides > section > p { font-size: 0.65em; }
+
+  .subtitle {
+    color: var(--cc-terracotta);
+    font-size: 0.52em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.15em;
+    display: inline-block;
+  }
+
+  .sub-tag {
+    background: var(--cc-cream);
+    color: var(--cc-brown-dark);
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.45em;
+    font-weight: 600;
+    border: 1px solid var(--cc-gray-border);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* Title & Closing Special Slides */
+  .reveal .slides section.title-slide,
+  .reveal .slides section.closing-slide {
+    height: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 6% !important;
+    text-align: center !important;
+  }
+  .title-slide { background: var(--cc-brown); color: white !important; }
+  .title-slide h1 { color: white !important; font-size: 1.45em; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .title-slide .subtitle { color: var(--cc-cream); }
+  .title-slide .meta { color: var(--cc-cream); font-size: 0.44em; opacity: 0.95; line-height: 1.5; }
+  .title-slide .logo { width: 85px; margin-bottom: 0.3em; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); }
+
+  .closing-slide { background: var(--cc-brown); color: white !important; }
+  .closing-slide h1, .closing-slide h2 { color: white !important; }
+
+  /* Card Grids */
+  .card-grid { display: grid; gap: 0.45em; margin-top: 0.35em; }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--cc-cream);
+    border-radius: 8px;
+    padding: 0.55em 0.75em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border: 1px solid rgba(107, 66, 38, 0.12);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cc-terracotta) rgba(107, 66, 38, 0.08);
+  }
+  .card.highlight {
+    background: #FFFDF9;
+    border-left: 4px solid var(--cc-terracotta);
+  }
+  .card.accent {
+    background: #EFE8DF;
+    border-left: 4px solid var(--cc-brown);
+  }
+  .card .card-title {
+    margin: 0 0 0.2em 0;
+    color: var(--cc-brown);
+    font-size: 0.76em;
+    font-weight: 700;
+    text-transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card p { margin: 0; font-size: 0.54em; line-height: 1.35; color: var(--cc-charcoal); }
+
+  /* Badges & Pills */
+  .pill {
+    display: inline-block;
+    background: var(--cc-terracotta);
+    color: white;
+    border-radius: 999px;
+    padding: 0.18em 0.7em;
+    font-size: 0.48em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .pill.green { background: var(--cc-green); }
+  .pill.brown { background: var(--cc-brown); }
+  .pill.dark { background: var(--cc-charcoal); }
+
+  /* Numeric stats */
+  .stat { text-align: center; padding: 0.3em; background: var(--cc-cream); border-radius: 8px; }
+  .stat .num { font-size: 2.1em; font-weight: 700; color: var(--cc-terracotta); line-height: 1; }
+  .stat .label { font-size: 0.52em; color: var(--cc-brown); margin-top: 0.25em; font-weight: 600; }
+
+  /* Lists & Tables */
+  .reveal ul { font-size: 0.68em; line-height: 1.45; margin: 0.3em 0 0.5em 1.2em; }
+  .reveal li { margin-bottom: 0.28em; }
+  .reveal p { font-size: 0.68em; line-height: 1.4; }
+  .reveal table {
+    font-size: 0.56em;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.4em;
+    background: var(--cc-cream-light);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .reveal table th {
+    background: #EAE2D7;
+    color: var(--cc-brown-dark);
+    font-weight: 700;
+    border-bottom: 2px solid var(--cc-terracotta);
+    padding: 0.4em 0.5em;
+    text-align: left;
+  }
+  .reveal table td {
+    border-bottom: 1px solid var(--cc-gray-border);
+    padding: 0.38em 0.5em;
+    vertical-align: middle;
+  }
+  .reveal table tr:last-child td { border-bottom: none; }
+
+  /* Timeline */
+  .timeline { display: flex; justify-content: space-between; margin-top: 0.8em; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; top: 18px; left: 6%; right: 6%; height: 3px;
+    background: var(--cc-terracotta); z-index: 0;
+  }
+  .tstep { text-align: center; flex: 1; position: relative; z-index: 1; padding: 0 4px; }
+  .tstep .dot {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--cc-brown); color: white;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35em auto;
+    font-size: 0.65em; font-weight: 700; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .tstep.active .dot { background: var(--cc-terracotta); }
+  .tstep .tlabel { font-size: 0.54em; font-weight: 700; color: var(--cc-brown); }
+  .tstep .tdesc { font-size: 0.44em; color: var(--cc-charcoal); line-height: 1.25; margin-top: 0.15em; }
+
+  /* Icon Rows */
+  .icon-row { display: flex; align-items: center; gap: 0.6em; margin-bottom: 0.32em; }
+  .icon-row p { font-size: 0.62em; margin: 0; line-height: 1.35; }
+  .icon-row .bullet {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--cc-terracotta);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.58em; flex-shrink: 0;
+  }
+  .icon-row .bullet.check { background: var(--cc-green); }
+
+  /* Image Containers */
+  .img-showcase {
+    display: flex;
+    gap: 0.8em;
+    align-items: center;
+    margin-top: 0.4em;
+  }
+  .img-frame {
+    background: white;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    border: 1px solid var(--cc-gray-border);
+  }
+  .img-frame img {
+    display: block;
+    width: 100%;
+    max-height: 350px;
+    object-fit: contain;
+    border-radius: 4px;
+    margin: 0 !important;
+  }
+  .img-caption {
+    font-size: 0.44em;
+    color: #666;
+    margin-top: 0.3em;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Code presentation */
+  .reveal pre {
+    width: 100%;
+    margin: 0.3em 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    font-size: 0.46em;
+  }
+  .reveal pre code {
+    max-height: 420px;
+    padding: 0.8em 1em;
+    border-radius: 6px;
+    line-height: 1.35;
+  }
+
+  .footnote { font-size: 0.42em; color: #777; margin-top: 0.7em; font-style: italic; }
+  .alert-box {
+    background: #FFF3CD;
+    border-left: 4px solid #FFA000;
+    padding: 0.4em 0.8em;
+    border-radius: 4px;
+    margin-top: 0.4em;
+  }
+  .alert-box p { margin: 0; font-size: 0.52em; color: #856404; }
+
+  /* Split Layouts */
+  .split-layout { display: flex; gap: 0.8em; align-items: stretch; margin-top: 0.4em; }
+  .split-left { flex: 1.2; }
+  .split-right { flex: 0.8; }
+
+  /* Speaker Badge for Role Separation */
+  .speaker-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.44em;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.4em;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .speaker-badge.abraham {
+    background: #EBF5FB;
+    color: #1B4F72;
+    border: 1px solid #AED6F1;
+  }
+  .speaker-badge.richard {
+    background: #EAFAF1;
+    color: #145A32;
+    border: 1px solid #A9DFBF;
+  }
+  .speaker-badge.gabriel {
+    background: #FDEDEC;
+    color: #922B21;
+    border: 1px solid #F5B7B1;
+  }
+  .speaker-badge .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .speaker-badge.abraham .indicator { background: #2980B9; }
+  .speaker-badge.richard .indicator { background: #27AE60; }
+  .speaker-badge.gabriel .indicator { background: #C0392B; }
+
+  /* Time Badge */
+  .time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(107, 66, 38, 0.08);
+    color: var(--cc-brown);
+    font-size: 0.40em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--cc-gray-border);
+    margin-left: 8px;
+  }
+
+  /* Transition Slides */
+  .transition-slide {
+    height: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0 8% !important;
+    color: white !important;
+  }
+  .transition-slide.to-richard {
+    background: linear-gradient(135deg, #145A32 0%, #1E8449 60%, #27AE60 100%) !important;
+  }
+  .transition-slide.to-gabriel {
+    background: linear-gradient(135deg, #4A2E1A 0%, #6B4226 50%, #C9713F 100%) !important;
+  }
+  .transition-slide h2 {
+    color: white !important;
+    font-size: 1.55em !important;
+    margin-bottom: 0.2em !important;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  }
+  .transition-slide p {
+    color: #F5F0EA !important;
+    font-size: 0.65em !important;
+    line-height: 1.4 !important;
+  }
+</style>
+
+</head>
+<body>
+<div class="reveal">
+
+  <!-- ===================================================================================
+       1. PORTADA (Ponente: Josué Abraham Ortuño)
+       =================================================================================== -->
+  <section class="title-slide">
+    <div style="display:flex; justify-content:center; gap:10px; margin-bottom:0.4em;">
+      <div class="speaker-badge abraham"><span class="indicator"></span> Ponente: Josué Abraham Ortuño</div>
+      <div class="time-badge">⏱ Tiempo Total Grupo: 25 min</div>
+    </div>
+    <img class="logo" src="img/logo.png" alt="Logo CC La Barranca">
+    <div class="subtitle" style="font-size:0.35em; line-height:1.4;">
+      REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
+      MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN UNIVERSITARIA, CIENCIA Y TECNOLOGÍA<br>
+      UNIVERSIDAD POLITÉCNICA TERRITORIAL DEL ESTADO TRUJILLO "MARIO BRICEÑO IRAGORRY"<br>
+      PROGRAMA NACIONAL DE FORMACIÓN EN INFORMÁTICA (PNFI) — TRAYECTO III
+    </div>
+    <h1 style="font-size:0.75em; line-height:1.25; margin:0.35em 0 0.1em 0;">
+      Sistema de Información Web para la Gestión Administrativa<br>
+      del Consejo Comunal "La Barranca"
+    </h1>
+    <p style="font-size:0.46em; color:var(--cc-cream); margin:0.25em 0 0 0; font-weight:600;">
+      Proyecto Socio-Tecnológico — Aplicación de los Marcos Metodológicos Propios LAZY y LOL
+    </p>
+    <div class="meta" style="margin-top:0.8em;">
+      <strong>Autores:</strong> Josué Abrahan Ortuño Quintero &nbsp;·&nbsp; Richard Godoy &nbsp;·&nbsp; Gabriel Andrés Morales Mago<br>
+      <strong>Docente Asesor:</strong> Ing. Luis Colmenares &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Rep. Institucional:</strong> Ing. Carlos Pineda &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Rep. Comunitario:</strong> Mgtr. Evelyn Hackett<br>
+      <span style="font-size:0.9em; opacity:0.85;">Trujillo, Estado Trujillo — 2026</span>
+    </div>
+    <aside class="notes">
+      Buenos días a los distinguidos miembros del jurado evaluador, docente asesor Ing. Luis Colmenares, representante institucional Ing. Carlos Pineda, representante comunitaria Mgtr. Evelyn Hackett y público presente.
+      Mi nombre es Josué Abraham Ortuño Quintero, y junto a mis compañeros Richard Godoy y Gabriel Morales Mago, presentamos la defensa de nuestro Proyecto Socio-Tecnológico: "Sistema de Información Web para la Gestión Administrativa del Consejo Comunal La Barranca", enmarcado en el PNFI de la Universidad Politécnica Territorial del Estado Trujillo "Mario Briceño Iragorry".
+    </aside>
+  </section>
+
+  <!-- ===================================================================================
+       2. NOMBRE DE LA ORG. (Ponente: Josué Abraham Ortuño)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 2.1: Nombre y Localización de la Organización -->
+    <section>
+      <div class="speaker-badge abraham"><span class="indicator"></span> Ponente: Josué Abraham Ortuño</div>
+      <div class="subtitle">CONTEXTO SOCIAL Y TERRITORIAL</div>
+      <h2>Nombre de la Organización</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Consejo Comunal "La Barranca"</div>
+            <p style="font-size:0.62em; font-weight:600; color:var(--cc-brown-dark);">
+              Instancia de participación, articulación e integración del poder popular.
+            </p>
+            <p style="margin-top:0.3em;">
+              Regida legalmente por la <strong>Ley Orgánica de los Consejos Comunales (2009)</strong>, mediante la cual los ciudadanos ejercen directamente la gestión de políticas públicas y proyectos de desarrollo comunitario.
+            </p>
+          </div>
+          <div class="card" style="margin-top:0.4em;">
+            <div class="card-title">Localización Geográfica</div>
+            <ul>
+              <li><strong>Comunidad:</strong> Barrio La Barranca.</li>
+              <li><strong>Parroquia:</strong> Matriz.</li>
+              <li><strong>Municipio:</strong> Trujillo.</li>
+              <li><strong>Estado:</strong> Trujillo, República Bolivariana de Venezuela.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Rol: Cliente y Usuario Final</div>
+            <p>En un escenario real de ingeniería de software, el Consejo Comunal La Barranca opera como nuestro <strong>Cliente directo</strong>: definió los puntos de dolor, aportó los datos del censo, validó los requerimientos funcionales y asume la operación del sistema.</p>
+          </div>
+          <div class="stat" style="margin-top:0.4em;">
+            <div class="num">+300</div>
+            <div class="label">Familias Integrantes de la Comunidad La Barranca</div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Comenzamos con el Nombre de la Organización: el Consejo Comunal 'La Barranca', ubicado en la Parroquia Matriz del Municipio Trujillo.
+        Esta organización comunitaria atiende a más de 300 familias del sector y funge como nuestro Cliente directo en un escenario real de ingeniería de software: definió sus requerimientos, participó en la validación y es quien opera activamente el sistema.
+      </aside>
+    </section>
+
+    <!-- Slide 2.2: Estructura Organizativa del Consejo Comunal -->
+    <section>
+      <div class="speaker-badge abraham"><span class="indicator"></span> Ponente: Josué Abraham Ortuño</div>
+      <div class="subtitle">ESTRUCTURA DE GESTIÓN POPULAR</div>
+      <h2>Estructura Organizativa de la Organización</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <p>Conforme a la ley comunal, el Consejo Comunal La Barranca opera mediante tres unidades clave y la vocería de calle:</p>
+          <div class="card" style="margin-top:0.35em;">
+            <div class="card-title">Instancias Internas</div>
+            <ul>
+              <li><strong>Vocería Principal:</strong> Coordinación operativa general.</li>
+              <li><strong>Líder de Calle:</strong> Mgtr. Evelyn Hackett — articulación directa con las familias del sector.</li>
+              <li><strong>Unidad Ejecutiva:</strong> Comités de Trabajo (Alimentación, Salud, Hábitat y Servicios).</li>
+              <li><strong>Unidad Administrativa y Financiera:</strong> Administración y cuentas comunitarias.</li>
+              <li><strong>Unidad de Contraloría Social:</strong> Fiscalización de recursos y contraloría vecinal.</li>
+              <li><strong>Líderes de Calle:</strong> Articuladores casa por casa.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="img-frame">
+            <img src="img/organigrama.png" alt="Organigrama CC La Barranca">
+          </div>
+          <div class="img-caption">Figura 1: Organigrama del Consejo Comunal La Barranca (Autores, 2026).</div>
+        </div>
+      </div>
+      <aside class="notes">
+        En este organigrama podemos observar la estructura organizativa del Consejo Comunal La Barranca.
+        La líder de calle y los demás voceros son quienes están en contacto constante con las familias. Antes de este proyecto, toda esta estructura operaba a través de registros en cuadernos y hojas sueltas, lo cual limitaba fuertemente su capacidad operativa.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       3. MISIÓN Y VISIÓN (Ponente: Josué Abraham Ortuño)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 3.1: Misión y Visión de la Organización -->
+    <section>
+      <div class="speaker-badge abraham"><span class="indicator"></span> Ponente: Josué Abraham Ortuño</div>
+      <div class="subtitle">HORIZONTE INSTITUCIONAL COMUNITARIO</div>
+      <h2>Misión y Visión de la Organización</h2>
+      <div class="card-grid cols-2" style="margin-top:0.4em;">
+        <div class="card highlight">
+          <div class="card-title" style="font-size:0.85em; color:var(--cc-terracotta);">Misión Comunitaria</div>
+          <p style="font-size:0.60em; line-height:1.45; margin-bottom:0.4em;">
+            <em>"Promover la organización, la participación activa y la autogestión de la comunidad de La Barranca, facilitando el registro, seguimiento y control de las familias beneficiarias, así como la planificación y ejecución de proyectos sociales, con el fin de mejorar la calidad de vida de sus habitantes y fortalecer la contraloría ciudadana sobre los recursos y programas que les corresponden."</em>
+          </p>
+          <div class="pill brown">Autogestión y Organización</div>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="font-size:0.85em; color:var(--cc-brown);">Visión Comunitaria</div>
+          <p style="font-size:0.60em; line-height:1.45; margin-bottom:0.4em;">
+            <em>"Ser una instancia comunitaria modelo en el estado Trujillo, reconocida por su gestión transparente, eficiente y participativa. El Consejo Comunal La Barranca aspira a contar con herramientas tecnológicas que centralicen y digitalicen su información, garantizando que cada familia esté debidamente registrada, que los beneficios sean distribuidos con equidad y trazabilidad, y que los ciudadanos tengan acceso a información clara y oportuna."</em>
+          </p>
+          <div class="pill green">Transparencia y Tecnología</div>
+        </div>
+      </div>
+      <aside class="notes">
+        La Misión del Consejo Comunal La Barranca es clara: promover la autogestión, la contraloría ciudadana y el registro eficiente de las familias.
+        Y su Visión establece textualmente su aspiración a convertirse en una comunidad modelo en el estado Trujillo mediante herramientas tecnológicas que digitalicen su gestión con equidad y trazabilidad. Nuestro proyecto nació precisamente para materializar esta visión.
+      </aside>
+    </section>
+
+    <!-- Slide 3.2: Valores y Correspondencia con el Proyecto -->
+    <section>
+      <div class="speaker-badge abraham"><span class="indicator"></span> Ponente: Josué Abraham Ortuño</div>
+      <div class="subtitle">PRINCIPIOS Y ARTICULACIÓN</div>
+      <h2>Valores y Correspondencia con el Proyecto</h2>
+      <div class="card-grid cols-3" style="margin-top:0.45em;">
+        <div class="card fragment fade-up">
+          <div class="card-title">Justicia Distributiva</div>
+          <p>Asegurar que cada familia registrada reciba los beneficios sociales correspondientes sin duplicidades ni exclusiones arbitrarias.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">Transparencia Pública</div>
+          <p>Disponibilidad de reportes auditables y carteleras de comunicados para que cualquier habitante conozca el destino de los recursos.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">Soberanía de Datos</div>
+          <p>Control directo y seguro de los datos censales en manos del propio poder popular organizado, sin dependencias externas.</p>
+        </div>
+      </div>
+      <div class="alert-box fragment fade-up" style="margin-top:0.5em;">
+        <p><strong>Cierre del Primer Bloque:</strong> Con la identificación de la organización comunitaria, su estructura, misión y visión, cedo la palabra a mi compañero <strong>Richard Godoy</strong> para continuar con las organizaciones vinculadas, propósitos, justificación y línea de investigación.</p>
+      </div>
+      <aside class="notes">
+        Estos valores de justicia distributiva, transparencia y soberanía de datos son el motor de nuestro trabajo.
+        Con esto culmino mi parte sobre la organización, su misión y visión.
+        A continuación, cedo la palabra a mi compañero Richard Godoy, quien expondrá las organizaciones vinculadas al proyecto, los propósitos general y específicos, y la justificación con su línea de investigación.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       CAMBIO DE PONENTE: DE ABRAHAM A RICHARD
+       =================================================================================== -->
+  <section class="transition-slide to-richard">
+    <div class="speaker-badge richard" style="border: 2px solid white; font-size:0.52em; padding: 5px 16px;">
+      <span class="indicator" style="background:#FFF;"></span> CAMBIO DE PONENTE
+    </div>
+    <h2 style="font-size:1.6em; margin-top:0.3em; margin-bottom:0.15em;">
+      Pase de Palabra a Richard Godoy
+    </h2>
+    <div style="background:rgba(255,255,255,0.15); border-radius:8px; padding:0.6em 1.2em; max-width:750px; margin:0.5em auto; border: 1px solid rgba(255,255,255,0.3);">
+      <p style="font-size:0.62em; font-weight:700; margin:0; color:#FFF;">
+        Ponente: Richard Godoy &nbsp;·&nbsp; C.I: 26.191.559
+      </p>
+      <p style="font-size:0.48em; margin:0.3em 0 0 0; color:#F5F0EA;">
+        Responsable de Auditoría y Verificación de Requisitos (Componente Oversight de LOL)
+      </p>
+    </div>
+    <p style="font-size:0.52em; color:#F5F0EA; opacity:0.9; margin-top:0.6em;">
+      A continuación: Organizaciones Vinculadas al Proyecto, Propósitos General y Específicos, y Justificación e Impacto Social con Línea de Investigación.
+    </p>
+    <aside class="notes">
+      Buenos días miembros del jurado evaluador, docente asesor y presentes. Soy Richard Godoy.
+      Agradezco a mi compañero Abraham por la exposición de la organización, su misión y su visión. A partir de este momento, asumo la presentación de las organizaciones vinculadas al proyecto, los propósitos general y específicos, y la justificación e impacto social vinculado a la línea de investigación del PNFI.
+    </aside>
+  </section>
+
+  <!-- ===================================================================================
+       4. NOMBRE DE ORGANIZACIONES VINCULADAS AL PROYECTO (Ponente: Richard Godoy)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 4.1: Organizaciones Vinculadas -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">SINERGIA INTERINSTITUCIONAL</div>
+      <h2>Nombre de las Organizaciones Vinculadas</h2>
+      <p>El proyecto socio-tecnológico articula coordinadamente cinco instituciones clave:</p>
+      <div class="card-grid cols-2" style="margin-top:0.4em;">
+        <div class="card highlight fragment fade-up">
+          <div class="card-title"><span class="pill brown">Ente Rector</span> MPPCMS</div>
+          <p><strong>Ministerio del Poder Popular para las Comunas y los Movimientos Sociales:</strong> Establece la normativa jurídica comunal, validación de vocerías y políticas nacionales de gestión popular.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title"><span class="pill brown">Instancia Territorial</span> UBCH</div>
+          <p><strong>Unidades de Batalla Bolívar-Chávez:</strong> Organización sociopolítica territorial que apoya la articulación y logística en las jornadas de alimentación y distribución comunitaria.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill green">Cliente Directo</span> Consejo Comunal "La Barranca"</div>
+          <p><strong>Cliente y Beneficiario Principal:</strong> Propietaria de los datos del censo; fungió como cliente real al definir y validar los requerimientos funcionales, y asume la operación activa del software.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill green">Espacio Comunitario</span> Liceo "Ramón Ignacio Méndez"</div>
+          <p><strong>Institución Educativa Vecinal:</strong> Presta sus instalaciones físicas para la realización de asambleas ciudadanas, censos presenciales y encuentros comunitarios.</p>
+        </div>
+      </div>
+      <div class="card accent fragment fade-up" style="margin-top:0.4em;">
+        <div class="card-title"><span class="pill dark">Academia</span> Universidad Politécnica Territorial del Estado Trujillo "Mario Briceño Iragorry" (UPTTMBI)</div>
+        <p>Casa de estudios formadora que aporta el marco metodológico, asesoría técnica docente y evaluación académica del software desarrollado.</p>
+      </div>
+      <aside class="notes">
+        Iniciamos este bloque con el Nombre de las Organizaciones Vinculadas al Proyecto.
+        Este proyecto no fue desarrollado en aislamiento, sino en interacción directa con 5 organizaciones: el Ministerio de Comunas en lo normativo; la UBCH en la articulación territorial; el Consejo Comunal La Barranca como centro operativo; el Liceo Ramón Ignacio Méndez como punto de encuentro comunitario; y nuestra universidad UPTTMBI como guía académico-metodológica.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       5. PROPÓSITOS (GENERAL Y ESPECÍFICOS) (Ponente: Richard Godoy)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 5.1: Propósitos General y Específicos -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">METAS DE LA INVESTIGACIÓN</div>
+      <h2>Propósitos (General y Específicos)</h2>
+      <div class="card highlight" style="margin-bottom:0.4em;">
+        <div class="card-title">Propósito General</div>
+        <p style="font-size:0.62em; font-weight:600; line-height:1.45;">
+          Desarrollar un sistema de información web para la gestión administrativa del Consejo Comunal "La Barranca", que automatice el registro de familias, el control de la distribución de beneficios y la generación de reportes estadísticos.
+        </p>
+      </div>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Propósito 1</span> Requisitos</div>
+          <p><strong>Determinar</strong> los requerimientos funcionales y no funcionales del sistema mediante el marco analítico LAZY.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Propósito 2</span> Diseño</div>
+          <p><strong>Diseñar</strong> la estructura integral del sistema de información web (arquitectura lógica, modelo NoSQL y seguridad RBAC).</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Propósito 3</span> Implantación</div>
+          <p><strong>Implantar</strong> el sistema de información web para el Consejo Comunal "La Barranca" (codificación, pruebas unitarias/UAT, despliegue y capacitación).</p>
+        </div>
+      </div>
+      <aside class="notes">
+        Presentamos ahora los Propósitos de la Investigación.
+        El Propósito General establece con claridad la solución: desarrollar un sistema de información web que automatice el censo familiar, las entregas de beneficios y los reportes demográficos.
+        Y los tres Propósitos Específicos definen las tres etapas del logro: primero, determinar requisitos con LAZY; segundo, diseñar la estructura técnica y de datos; y tercero, implantar el sistema operativo con pruebas y capacitación comunitaria.
+      </aside>
+    </section>
+
+    <!-- Slide 5.2: Árbol de Objetivos -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">TRANSFORMACIÓN DE LA REALIDAD</div>
+      <h2>Árbol de Objetivos del Proyecto</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <p>El árbol de objetivos traduce las causas y efectos del diagnóstico en medios técnicos y fines de impacto:</p>
+          <div class="card" style="margin-top:0.35em;">
+            <div class="card-title">Medios (Acciones del Proyecto)</div>
+            <ul>
+              <li>Implantación de una base de datos centralizada y reactiva en la nube.</li>
+              <li>Módulo de trazabilidad digital por cédula para entrega de insumos.</li>
+              <li>Generación instantánea de reportes y demografía en tiempo real.</li>
+            </ul>
+          </div>
+          <div class="card highlight" style="margin-top:0.35em;">
+            <div class="card-title">Fines (Impacto Comunitario)</div>
+            <p>Erradicación de listas manuales extraviadas, justicia distributiva sin dobles asignaciones y fortalecimiento de la contraloría social comunitaria.</p>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="img-frame">
+            <img src="img/arbol_s-1.png" alt="Árbol de Objetivos">
+          </div>
+          <div class="img-caption">Figura 2: Árbol de Objetivos del Consejo Comunal La Barranca (Autores, 2026).</div>
+        </div>
+      </div>
+      <aside class="notes">
+        En este Árbol de Objetivos observamos cómo se transformaron los problemas diagnosticados en medios y fines positivos.
+        Cada funcionalidad del sistema ataca directamente una causa raíz: la base de datos resuelve el extravío del papel; el módulo de entregas resuelve la falta de trazabilidad; y los reportes automáticos eliminan la sobrecarga de trabajo de los voceros.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       6. JUSTIFICACIÓN E IMPACTO SOCIAL (LÍNEA DE INVESTIGACIÓN) (Ponente: Richard Godoy)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 6.1: Justificación Teórica, Técnica y Legal -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">FUNDAMENTACIÓN INTEGRAL</div>
+      <h2>Justificación Teórica, Técnica y Legal</h2>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card highlight">
+          <div class="card-title">Justificación Teórica</div>
+          <p>Sustentada en la <strong>Teoría General de Sistemas</strong> (Bertalanffy) y los <strong>Sistemas de Información</strong> (Laudon & Laudon). Los datos del censo se transforman en flujos de información estructurados y confiables para la toma de decisiones comunitarias.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">Justificación Técnica</div>
+          <p>Stack moderno <strong>JavaScript + React.js + Firebase BaaS</strong>. Garantiza interfaces reactivas de alta velocidad, base de datos NoSQL Cloud Firestore en tiempo real y costo cero de infraestructura mediante la capa gratuita de Google.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">Justificación Legal</div>
+          <p>Fundamentada en la <strong>CRBV (Art. 110:</strong> interés público de la ciencia y tecnología), <strong>LOCTI (Arts. 1, 2, 11)</strong>, la <strong>Ley Orgánica de los Consejos Comunales (2009)</strong> y el Decreto Ley de Intercambio Electrónico de Datos (2012).</p>
+        </div>
+      </div>
+      <aside class="notes">
+        La justificación de la propuesta es triple:
+        Teórica: porque ordena los datos comunitarios bajo principios rigurosos de sistemas de información.
+        Técnica: porque adoptamos React con Firebase, lo que permite una aplicación web moderna, reactiva y sin costos de servidores para el consejo comunal.
+        Y Legal: amparada en el Artículo 110 de la CRBV, la LOCTI y la Ley de Consejos Comunales.
+      </aside>
+    </section>
+
+    <!-- Slide 6.2: Impacto Social y Beneficiarios -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">TRANSFORMACIÓN POPULAR</div>
+      <h2>Impacto Social y Beneficiarios</h2>
+      <div class="card-grid cols-2" style="margin-top:0.4em;">
+        <div class="card accent">
+          <div class="card-title">Beneficiarios Directos</div>
+          <ul>
+            <li><strong>Vocería Principal y Líderes de Calle:</strong> Ahorro del 85% del tiempo en la transcripción de censos y actas de jornadas.</li>
+            <li><strong>Más de 300 Familias y Habitantes:</strong> Certeza y equidad en la recepción de beneficios sociales (CLAP, gas, jornadas de salud) y emisión ágil de constancias de residencia.</li>
+            <li><strong>Estudiantes del PNFI:</strong> Validación práctica de competencias de ingeniería de software.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">Beneficiarios Indirectos</div>
+          <ul>
+            <li><strong>Comunidad en General:</strong> Clima de confianza vecinal y transparencia en la rendición de cuentas públicas.</li>
+            <li><strong>Ministerio de Comunas:</strong> Disponibilidad de registros censales confiables y digitalizados.</li>
+            <li><strong>Otros Consejos Comunales:</strong> Disponibilidad de un software libre, abierto y adaptable a sus propias realidades.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="stat" style="margin-top:0.4em;">
+        <div class="num">+300</div>
+        <div class="label">Familias Beneficiadas con Trazabilidad Digital y Cero Pérdida de Datos</div>
+      </div>
+      <aside class="notes">
+        El impacto social es tangible: beneficia a más de 300 familias del sector La Barranca al asegurar una distribución transparente de insumos sin exclusiones, reduce drásticamente el desgaste de los voceros y sienta las bases de un modelo transferible a otros consejos comunales.
+      </aside>
+    </section>
+
+    <!-- Slide 6.3: Línea de Investigación y Articulación con Plan de la Patria -->
+    <section>
+      <div class="speaker-badge richard"><span class="indicator"></span> Ponente: Richard Godoy</div>
+      <div class="subtitle">INSERCIÓN ACADÉMICA Y ESTRATÉGICA</div>
+      <h2>Línea de Investigación del PNFI y Plan de la Patria</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Línea de Investigación PNFI</div>
+            <p style="font-size:0.62em; font-weight:700; color:var(--cc-terracotta);">
+              Sistemas de Información y Modelado de Datos
+            </p>
+            <p style="margin-top:0.2em;">Área de Conocimiento: <strong>Programación e Ingeniería del Software</strong> (Trayecto III PNFI - UPTTMBI).</p>
+            <p style="margin-top:0.2em;">Integra curricularmente: <em>Programación Web, Bases de Datos, Ingeniería de Software y Proyecto Socio-Tecnológico III</em>.</p>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Articulación con el Plan de la Patria</div>
+            <ul>
+              <li><strong>Objetivo Nacional 1.5:</strong> Desarrollar las capacidades científico-tecnológicas vinculadas a las necesidades del pueblo, impulsando tecnologías de información soberanas.</li>
+              <li><strong>Objetivo Nacional 2.5:</strong> Consolidación del Estado Popular y Comunal mediante herramientas informáticas de autogestión libre.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="alert-box fragment fade-up" style="margin-top:0.5em;">
+        <p><strong>Cierre del Bloque Contextual y Estratégico:</strong> Concluyo mi exposición de las organizaciones vinculadas, propósitos, justificación, impacto social y línea de investigación. A continuación, cedo la palabra a mi compañero <strong>Gabriel Morales</strong> para la defensa técnica del proyecto.</p>
+      </div>
+      <aside class="notes">
+        Finalizamos este bloque vinculando el proyecto a la Línea de Investigación del PNFI: 'Sistemas de Información y Modelado de Datos', dentro del área de Programación e Ingeniería de Software, y con los objetivos 1.5 y 2.5 del Plan de la Patria sobre soberanía tecnológica y poder comunal.
+        Con esto culmino mi intervención. Cedo la palabra a mi compañero Gabriel Morales, quien asumirá la defensa del núcleo metodológico, el desarrollo técnico de las fases, la demostración del sistema y las conclusiones finales.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       CAMBIO DE PONENTE: DE RICHARD A GABRIEL
+       =================================================================================== -->
+  <section class="transition-slide to-gabriel">
+    <div class="speaker-badge gabriel" style="border: 2px solid white; font-size:0.52em; padding: 5px 16px;">
+      <span class="indicator" style="background:#FFF;"></span> CAMBIO DE PONENTE
+    </div>
+    <h2 style="font-size:1.6em; margin-top:0.3em; margin-bottom:0.15em;">
+      Pase de Palabra a Gabriel Morales Mago
+    </h2>
+    <div style="background:rgba(255,255,255,0.15); border-radius:8px; padding:0.6em 1.2em; max-width:750px; margin:0.5em auto; border: 1px solid rgba(255,255,255,0.3);">
+      <p style="font-size:0.62em; font-weight:700; margin:0; color:#FFF;">
+        Ponente: Gabriel Andrés Morales Mago &nbsp;·&nbsp; C.I: 22.892.416
+      </p>
+      <p style="font-size:0.48em; margin:0.3em 0 0 0; color:#F5F0EA;">
+        Responsable de Arquitectura Técnica, Lógica de Datos y Desarrollo Modular (Componentes Logic & Layering)
+      </p>
+    </div>
+    <p style="font-size:0.52em; color:#F5F0EA; opacity:0.9; margin-top:0.6em;">
+      A continuación: 7. Metodología &nbsp;·&nbsp; 8. Desarrollo de las Fases &nbsp;·&nbsp; 9. Demostración del Sistema &nbsp;·&nbsp; 10. Conclusiones y Recomendaciones
+    </p>
+    <aside class="notes">
+      Buenos días distinguidos miembros del jurado y profesores evaluadores. Soy Gabriel Morales Mago.
+      Agradezco a mis compañeros Abraham y Richard por la presentación del contexto comunitario, los propósitos y el impacto social. A partir de este momento, asumo la defensa del núcleo metodológico, el desarrollo técnico de las fases bajo los marcos propios LAZY y LOL, la demostración de la arquitectura y pantallas del sistema SIW-CC, y las conclusiones y recomendaciones del proyecto.
+    </aside>
+  </section>
+
+  <!-- ===================================================================================
+       7a. PRESENTACIÓN MUNDIAL DE LAZY Y LOL (Ponente: Gabriel Morales)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 7a.1: Introducción a los Marcos Propios -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">CONTRIBUCIÓN METODOLÓGICA ORIGINAL</div>
+      <h2>Presentando LAZY y LOL — Dos Marcos Propios al Mundo</h2>
+      <p style="font-size:0.65em; font-weight:600; color:var(--cc-brown-dark); margin-bottom:0.4em;">
+        Propuestos por <strong>Morales (2026)</strong> como respuesta de ingeniería a un problema real: la fricción metodológica de los proyectos socio-tecnológicos venezolanos.
+      </p>
+      <div class="card-grid cols-2" style="margin-top:0.3em;">
+        <div class="card highlight">
+          <div class="card-title" style="font-size:0.9em; color:var(--cc-terracotta);">
+            🔍 LAZY — Marco de Recolección de Requerimientos
+          </div>
+          <p style="font-size:0.56em; font-weight:600; margin-bottom:0.3em;">
+            <em>Listen · Analyze · Zoom · Yield</em>
+          </p>
+          <p>Resuelve el problema histórico de la desconexión entre el diagnóstico social etnográfico y la especificación técnica de software. Cada necesidad comunitaria queda trazada a un Requisito Funcional verificable mediante un artefacto formal: la <strong>Bitácora de Cruce</strong>.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="font-size:0.9em; color:var(--cc-brown);">
+            🏗️ LOL — Marco de Desarrollo Ágil
+          </div>
+          <p style="font-size:0.56em; font-weight:600; margin-bottom:0.3em;">
+            <em>Logic · Oversight · Layering</em>
+          </p>
+          <p>Rige la construcción incremental del software asegurando alineamiento permanente con los requerimientos capturados por LAZY. Integra por primera vez el uso explícito de pares de <strong>Inteligencia Artificial Generativa</strong> como herramienta de supervisión técnica.</p>
+        </div>
+      </div>
+      <div class="card accent fragment fade-up" style="margin-top:0.4em;">
+        <div class="card-title">¿Por qué no simplemente usar Scrum, XP o RUP?</div>
+        <p style="font-size:0.56em;">Estas metodologías fueron concebidas para empresas con equipos numerosos, presupuestos definidos y roles rígidamente especializados. Aplicarlas directamente en un PSI/T comunitario —con recursos escasos, desarrolladores universitarios y usuarios sin formación técnica— genera una <strong>fricción metodológica severa</strong>. LAZY y LOL son la respuesta.</p>
+      </div>
+      <aside class="notes">
+        Antes de entrar en la metodología de investigación formal, quiero tomar un momento para presentar formalmente dos marcos metodológicos de mi autoría: LAZY y LOL.
+        Estos marcos no son simple nomenclatura creativa. Son una propuesta seria de ingeniería de software para Proyectos Socio-Tecnológicos comunitarios, fundamentada en las mismas tradiciones académicas que produjeron XP, Scrum o el Proceso Unificado.
+        La diferencia es que LAZY y LOL nacieron directamente desde las trincheras de un consejo comunal venezolano, resolviendo problemas reales que esas metodologías convencionales no contemplan.
+      </aside>
+    </section>
+
+    <!-- Slide 7a.2: LAZY en profundidad + Bitácora de Cruce -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">LAZY — LISTEN · ANALYZE · ZOOM · YIELD</div>
+      <h2>El Marco LAZY: De la Voz Comunal al Requisito Formal</h2>
+      <div class="card-grid cols-4" style="margin-top:0.35em;">
+        <div class="card fragment fade-up">
+          <div class="card-title" style="color:var(--cc-terracotta);">👂 L — Listen</div>
+          <p><strong>Escucha Activa:</strong> Inmersión etnográfica sin preconcepciones técnicas. Se registran las historias, los dolores y las frustraciones reales de los voceros y jefes de calle.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title" style="color:var(--cc-terracotta);">🔎 A — Analyze</div>
+          <p><strong>Análisis de Datos:</strong> Procesamiento cualitativo y cuantitativo. Se identifican patrones: duplicidades censales, pérdida de listas de entrega, ausencia de estadísticas.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title" style="color:var(--cc-terracotta);">🎯 Z — Zoom</div>
+          <p><strong>Foco Crítico:</strong> Priorización de las necesidades más urgentes mediante bocetado de baja fidelidad. La comunidad valida el alcance del MVP antes de escribir una línea de código.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title" style="color:var(--cc-green);">📋 Y — Yield</div>
+          <p><strong>Producción de la Bitácora:</strong> Formalización de los RFs (YLD-00 a YLD-06) y RNFs clasificados por ISO/IEC 25010, en un artefacto trazable único.</p>
+        </div>
+      </div>
+      <div class="card highlight fragment fade-up" style="margin-top:0.4em;">
+        <div class="card-title">La Bitácora de Cruce — El Artefacto Puente</div>
+        <p style="font-size:0.55em;">Sustituye las tradicionales Historias de Usuario con un documento de transferencia estructurado. Cada necesidad comunitaria queda ligada a un módulo de software concreto con sus criterios de aceptación técnicos:</p>
+        <table style="margin-top:0.3em;">
+          <thead><tr><th>ID</th><th>Módulo</th><th>Requisito Funcional (RF)</th><th>Requisito No Funcional (RNF)</th></tr></thead>
+          <tbody>
+            <tr><td>YLD-00</td><td>Autenticación</td><td>Acceso con correo y contraseña, verificación de rol</td><td>Seguridad: acceso denegado sin sesión activa</td></tr>
+            <tr><td>YLD-01</td><td>Familias</td><td>Registro de núcleo familiar, sin duplicar cédulas</td><td>Usabilidad: guardado reactivo sin recargar página</td></tr>
+            <tr><td>YLD-03</td><td>Beneficios</td><td>Asignar recepción por familia con timestamp</td><td>Trazabilidad: timestamp de servidor inalterable</td></tr>
+            <tr><td>YLD-05</td><td>Reportes</td><td>Demografía en tiempo real por onSnapshot</td><td>Rendimiento: actualización sin recarga</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="notes">
+        LAZY tiene cuatro fases: Listen, Analyze, Zoom y Yield.
+        La fase Listen es una inmersión real en la comunidad, sin formularios ni tecnicismos; se escuchan historias.
+        Analyze transforma esas historias en datos categorizables.
+        Zoom prioriza y boceta con la comunidad, no con el programador.
+        Y Yield produce la Bitácora de Cruce: una tabla donde cada necesidad del vecino queda convertida en un Requisito Funcional con su ID único, su módulo de software correspondiente y sus criterios de calidad según ISO/IEC 25010.
+        Esto es lo que permite que un estudiante universitario pueda llegar al día 5 del desarrollo y saber exactamente qué código escribir, sin ambigüedades.
+      </aside>
+    </section>
+
+    <!-- Slide 7a.3: LOL en profundidad -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">LOL — LOGIC · OVERSIGHT · LAYERING</div>
+      <h2>El Marco LOL: Construcción Ágil sobre la Bitácora</h2>
+      <p style="font-size:0.62em; margin-bottom:0.4em;">LOL toma el artefacto de LAZY y guía la construcción modular del software. Sus tres pilares:</p>
+      <div class="card-grid cols-3" style="margin-top:0.3em;">
+        <div class="card highlight fragment fade-up">
+          <div class="card-title" style="color:var(--cc-brown);">⚙️ Logic — Lógica Deliberada</div>
+          <p style="margin-bottom:0.3em;">Cada decisión de arquitectura, base de datos y stack tecnológico debe estar explícitamente justificada con la Bitácora de Cruce como fuente de verdad.</p>
+          <p><strong>En práctica:</strong> La elección de React + Firebase se justificó porque YLD-05 exige actualización en tiempo real (onSnapshot) y YLD-00 exige autenticación delegada sin servidor propio.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title" style="color:var(--cc-brown);">👁️ Oversight — Supervisión Continua</div>
+          <p style="margin-bottom:0.3em;">Auditoría constante de calidad, seguridad y coherencia. Integra explícitamente el uso de <strong>IA Generativa como par de programación</strong>, una innovación frente a marcos que ignoran este paradigma.</p>
+          <p><strong>En práctica:</strong> 8 suites / 43 pruebas Jest automatizadas + Firebase Emulator + UAT en campo con la líder de calle.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title" style="color:var(--cc-brown);">🧱 Layering — Construcción por Capas</div>
+          <p style="margin-bottom:0.3em;">El software se construye en iteraciones acumulativas y estables. Ninguna capa superior arranca hasta que la inferior esté probada y aprobada.</p>
+          <p><strong>En práctica:</strong> Auth → Familias → Entregas → Constancias. Cada capa añade valor sin romper la anterior.</p>
+        </div>
+      </div>
+      <div class="card accent fragment fade-up" style="margin-top:0.4em; text-align:center; padding:0.5em;">
+        <p style="margin:0; font-size:0.60em; font-weight:700; color:var(--cc-brown-dark);">
+          LAZY captura la realidad social → La Bitácora la formaliza → LOL la convierte en software funcional
+        </p>
+      </div>
+      <aside class="notes">
+        LOL cierra el ciclo que LAZY abre.
+        Logic garantiza que nunca perdamos de vista los requerimientos de la Bitácora al tomar decisiones técnicas.
+        Oversight va más allá de las pruebas tradicionales: en este proyecto supervisamos la calidad con Jest automatizado, con el Firebase Emulator para blindar las reglas de seguridad, y con sesiones de validación cara a cara con la líder de calle. También incluimos de forma explícita el rol de la IA generativa como par de programación, algo que ningún marco tradicional contempla.
+        Layering, finalmente, da estructura incremental: primero construimos la capa de autenticación y roles; sobre ella, el censo; sobre el censo, las entregas; y sobre todo lo anterior, las constancias. Ningún módulo se inicia hasta que el anterior está estable y probado.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       7. METODOLOGÍA (Ponente: Gabriel Morales)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 7.1: Modalidad y Técnicas de Recolección -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">MARCO METODOLÓGICO DE INVESTIGACIÓN</div>
+      <h2>Modalidad y Técnicas de Investigación</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Modalidad: IAPT y Nivel Proyectivo</div>
+            <p><strong>Investigación-Acción Participativa y Transformadora (IAPT):</strong> Los investigadores no actúan como observadores externos pasivos, sino como agentes de cambio sociotécnico junto a los voceros comunales para resolver su problemática real mediante una solución tecnológica funcional.</p>
+          </div>
+          <div class="card" style="margin-top:0.35em;">
+            <div class="card-title">Técnicas de Procesamiento de Datos</div>
+            <ul>
+              <li><strong>Análisis Cualitativo:</strong> Categorización semántica de requerimientos vecinales.</li>
+              <li><strong>Modelado Conceptual:</strong> Entidades y relaciones comunales.</li>
+              <li><strong>Análisis Cuantitativo Descriptivo:</strong> Muestreo censal y estadísticas.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Técnicas e Instrumentos de Recolección</div>
+            <ul>
+              <li><strong>Observación Directa Participante:</strong> Registro sistemático in situ de jornadas de entrega y asambleas.</li>
+              <li><strong>Entrevistas no Estructuradas:</strong> Diálogos a profundidad con la Líder de Calle (Mgtr. Evelyn Hackett) y líderes vecinales.</li>
+              <li><strong>Análisis Documental:</strong> Revisión minuciosa de cuadernos de censo en papel, carpetas de actas y formatos existentes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Entrando en la Metodología: nos fundamentamos en la Investigación-Acción Participativa y Transformadora (IAPT). No impusimos una solución desde un laboratorio; fuimos a la comunidad La Barranca, participamos en sus asambleas y jornadas, revisamos los cuadernos físicos y entrevistamos a la líder de calle para levantar de forma rigurosa la realidad operativa del consejo comunal.
+      </aside>
+    </section>
+
+    <!-- Slide 7.2: Marco Analítico LAZY -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DIAGNÓSTICO SOCIO-TÉCNICO</div>
+      <h2>Marco Analítico LAZY y la Bitácora de Cruce</h2>
+      <p>Marco de cuatro fases diseñado para conectar el diagnóstico social con la ingeniería de requisitos sin pérdidas semánticas:</p>
+      <div class="card-grid cols-4" style="margin-top:0.4em;">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">L</span> Listen</div>
+          <p><strong>Escucha Activa:</strong> Diálogos etnográficos con voceros sin imponer tecnicismos iniciales para entender sus dolores reales.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">A</span> Analyze</div>
+          <p><strong>Análisis de Procesos:</strong> Descomposición del flujo manual: registro, cotejo de cédulas y entrega de insumos.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Z</span> Zoom</div>
+          <p><strong>Foco Crítico:</strong> Selección del Producto Mínimo Viable (MVP) y bocetado de validación con los usuarios.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill green">Y</span> Yield</div>
+          <p><strong>Bitácora de Cruce:</strong> Formalización final de Requisitos Funcionales y No Funcionales listos para desarrollo.</p>
+        </div>
+      </div>
+      <div class="card highlight fragment fade-up" style="margin-top:0.45em;">
+        <div class="card-title">La Bitácora de Cruce: Bisagra Metodológica</div>
+        <p>Documento de transferencia formal emitido al cierre de <em>Yield</em>. Cada necesidad comunitaria expresada por los voceros queda trazada unívocamente a un Requisito Funcional (RF-01 a RF-06) y a sus Requisitos No Funcionales (RNF-01 a RNF-04), garantizando que ningún requerimiento se pierda al iniciar la codificación.</p>
+      </div>
+      <aside class="notes">
+        Uno de los mayores aportes metodológicos de este trabajo es el marco analítico LAZY: Listen, Analyze, Zoom y Yield.
+        En proyectos sociotecnológicos convencionales, el diagnóstico social suele terminar en un informe narrativo que el programador difícilmente puede traducir a código.
+        LAZY resuelve esto con la fase Yield y la Bitácora de Cruce: un artefacto formal donde cada queja o necesidad comunitaria se convierte en un Requisito Funcional concreto y verificable.
+      </aside>
+    </section>
+
+    <!-- Slide 7.3: Metodología Ágil Propia LOL -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">INGENIERÍA DE SOFTWARE ADAPTADA</div>
+      <h2>Marco de Desarrollo Ágil LOL frente a Modelos Tradicionales</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">¿Por qué un Marco Propio en un PSI/T Comunitario?</div>
+            <p>Metodologías como <strong>Scrum, XP o RUP</strong> fueron creadas para corporaciones con presupuestos, grandes equipos y roles especializados. En un PSI/T comunitario (recursos escasos, desarrolladores universitarios y usuarios sin formación técnica) generan una <em>fricción metodológica severa</em>.</p>
+            <p style="margin-top:0.25em;">Inspirados en la filosofía de adaptación que llevó a Kent Beck a crear XP frente al modelo en cascada, formulamos el marco <strong>LOL (Logic, Oversight, Layering)</strong>, incorporando explícitamente el desarrollo asistido por pares de IA.</p>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Los Tres Pilares de LOL</div>
+            <ul>
+              <li><strong>Logic (Lógica deliberada):</strong> Toda decisión de arquitectura y base de datos debe estar técnicamente fundamentada en los RF.</li>
+              <li><strong>Oversight (Supervisión continua):</strong> Auditoría constante de consistencia, validación UAT en campo y suite de pruebas automatizadas.</li>
+              <li><strong>Layering (Construcción por capas):</strong> Desarrollo incremental modular donde cada capa se monta sobre la anterior ya estabilizada.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        ¿Por qué creamos el marco LOL: Logic, Oversight, Layering?
+        Porque aplicar Scrum estricto con Product Owner y ceremonias corporativas en una comunidad de Trujillo es inviable y contraproducente.
+        LOL no elude el rigor; al contrario, formaliza tres pilares: 'Logic', con decisiones arquitecturales justificadas; 'Oversight', con pruebas continuas y auditoría de seguridad; y 'Layering', construyendo el software capa sobre capa estable.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       8. DESARROLLO DE LAS FASES (Ponente: Gabriel Morales)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 8.1: Plan de Acción y Cronograma General -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">EJECUCIÓN DEL PROYECTO</div>
+      <h2>Plan de Acción y Cronograma de las 5 Fases LOL</h2>
+      <p>El desarrollo integral del SIW-CC se ejecutó en <strong>18 días de trabajo enfocado</strong>:</p>
+      <div class="timeline" style="margin-top:0.6em;">
+        <div class="tstep fragment fade-up">
+          <div class="dot">F1</div>
+          <div class="tlabel">Planificación</div>
+          <div class="tdesc">Iteración 0 (Días 1-4)<br>Bitácora de Cruce y setup</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">F2</div>
+          <div class="tlabel">Diseño</div>
+          <div class="tdesc">Modelo Firestore NoSQL y RBAC</div>
+        </div>
+        <div class="tstep fragment fade-up active">
+          <div class="dot">F3</div>
+          <div class="tlabel">Codificación</div>
+          <div class="tdesc">Iteraciones 1, 2 y 3 (Días 5-18)<br>React 18 + TailwindCSS</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">F4</div>
+          <div class="tlabel">Pruebas</div>
+          <div class="tdesc">Jest (43/43), Emuladores y UAT en campo</div>
+        </div>
+        <div class="tstep fragment fade-up">
+          <div class="dot">F5</div>
+          <div class="tlabel">Lanzamiento</div>
+          <div class="tdesc">Hosting HTTPS y capacitación comunitaria</div>
+        </div>
+      </div>
+      <div class="card highlight fragment fade-up" style="margin-top:0.6em;">
+        <div class="card-title">Distribución de Responsabilidades del Equipo en LOL</div>
+        <p><strong>Logic & Layering (Gabriel Morales):</strong> Modelado de datos, arquitectura cliente-BaaS, codificación de componentes, integración y despliegue.<br>
+           <strong>Oversight / Auditoría (Richard Godoy y Josué Abraham Ortuño):</strong> Auditoría de requisitos, supervisión de entregables, verificación de consistencia y validación funcional.</p>
+      </div>
+      <aside class="notes">
+        El desarrollo del SIW-CC se organizó en 5 fases metodológicas claras bajo el marco LOL, ejecutadas en 18 días de trabajo enfocado.
+        En la tabla de responsabilidades podemos ver la división operativa: mi persona asumió la responsabilidad de Logic y Layering —es decir, la arquitectura, el modelo de datos y la codificación modular— mientras que mis compañeros Richard y Abraham ejercieron el rol de Oversight y auditoría de requisitos.
+      </aside>
+    </section>
+
+    <!-- Slide 8.2: Fases de Planificación y Diseño -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">FASE 1 Y 2: CIMENTACIÓN TÉCNICA</div>
+      <h2>Planificación (Iteración 0) y Diseño</h2>
+      <div class="card-grid cols-2" style="margin-top:0.4em;">
+        <div class="card highlight">
+          <div class="card-title"><span class="pill brown">Fase 1</span> Planificación (Iteración 0)</div>
+          <p>Días 1 al 4. Se procesó la <strong>Bitácora de Cruce</strong> generada en LAZY, traduciendo cada requerimiento comunitario a especificaciones técnicas concretas:</p>
+          <ul>
+            <li>Elección de arquitectura SPA en React y backend serverless en Google Firebase.</li>
+            <li>Configuración del repositorio Git y variables de entorno seguras.</li>
+            <li>Definición del esquema base de autenticación y control de acceso.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title"><span class="pill brown">Fase 2</span> Diseño Lógico y de Datos</div>
+          <p>Estructuración técnica bajo el principio <strong>Logic</strong>:</p>
+          <ul>
+            <li><strong>Modelo Documental NoSQL:</strong> Colecciones principales (<code>families</code>, <code>deliveries</code>) y sub-colecciones (<code>members</code>, <code>receipts</code>) para consultas instantáneas de <code>O(1)</code>.</li>
+            <li><strong>Matriz de Roles RBAC:</strong> Definición de 4 perfiles (Administrador, Vocera Principal, Líder de Calle e Invitado).</li>
+            <li><strong>Diseño de Interfaz:</strong> Wireframes orientados a interfaces accesibles con fuentes legibles y alto contraste.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="notes">
+        En las Fases 1 y 2 establecimos los cimientos del sistema. La Iteración 0 procesó la Bitácora de Cruce para definir la arquitectura cliente-servidor BaaS.
+        En la Fase de Diseño modelamos el árbol documental NoSQL en Cloud Firestore con subcolecciones anidadas para evitar lecturas innecesarias, y definimos la matriz RBAC que rige los permisos de cada usuario.
+      </aside>
+    </section>
+
+    <!-- Slide 8.3: Fase de Codificación (Iteraciones 1 a 3) -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">FASE 3: CONSTRUCCIÓN MODULAR POR CAPAS</div>
+      <h2>Codificación: Las Tres Iteraciones LOL</h2>
+      <p>Construcción modular bajo el principio <strong>Layering</strong>: cada módulo se asienta sobre la capa anterior validada:</p>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Iteración 1</span> Familias e Integrantes</div>
+          <p><strong>Días 5 al 10.</strong> Desarrollo de <code>FamilyManagement.js</code> y <code>MemberManagement.js</code>. Censo digitalizado con listeners en tiempo real (<code>onSnapshot</code>) de Firestore, validación de cédulas y cálculo automático de integrantes.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Iteración 2</span> Entregas y Estadísticas</div>
+          <p><strong>Días 11 al 15.</strong> Desarrollo de <code>DeliveryEvents.js</code> y módulo de métricas. Control de distribución de beneficios por familia con actas de recepción y gráficos de demografía en tiempo real.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title"><span class="pill brown">Iteración 3</span> Constancias y Pulido</div>
+          <p><strong>Días 16 al 18.</strong> Desarrollo de <code>CertificateGenerator.js</code> para emisión digital de constancias de residencia, módulo público de Comunicados y refactorización responsive en TailwindCSS.</p>
+        </div>
+      </div>
+      <div class="alert-box fragment fade-up" style="margin-top:0.45em;">
+        <p><strong>Principio Layering en acción:</strong> Al finalizar la Iteración 1 ya existía un censo funcional; sobre este se montó la distribución de la Iteración 2, y sobre ambas se añadieron las constancias de la Iteración 3.</p>
+      </div>
+      <aside class="notes">
+        La codificación se estructuró en tres iteraciones progresivas.
+        En la primera iteración creamos el censo familiar en tiempo real. En la segunda, aprovechamos ese censo para construir la gestión de eventos de entrega y estadísticas demográficas. Y en la tercera, agregamos la generación digital de constancias y la cartelera comunitaria de comunicados.
+      </aside>
+    </section>
+
+    <!-- Slide 8.4: Fase de Pruebas y Oversight -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">FASE 4: ASEGURAMIENTO DE LA CALIDAD</div>
+      <h2>Pruebas y Control de Calidad (Oversight)</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Suite Automatizada (Jest + RTL)</div>
+            <p>Se implementaron <strong>8 suites de prueba y 43 casos de prueba</strong> unitarios y de componentes cubriendo autenticación, validación de cédulas, gestión de familias, eventos y constancias.</p>
+            <pre style="margin-top:0.3em;"><code class="language-bash">$ npm test -- --watchAll=false
+PASS src/__tests__/FamilyManagement.test.js
+PASS src/__tests__/DeliveryEvents.test.js
+PASS src/__tests__/Auth.test.js
+Test Suites: 8 passed, 8 total
+Tests:       43 passed, 43 total
+Snapshots:   0 total
+Time:        3.421 s</code></pre>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Firebase Emulator Suite</div>
+            <p>Entorno local aislado que simula Cloud Firestore y Firebase Auth. Permitió verificar que las <code>firestore.rules</code> bloquean inyecciones y accesos no autorizados sin costo ni peligro en producción.</p>
+          </div>
+          <div class="card" style="margin-top:0.35em;">
+            <div class="card-title">Pruebas de Aceptación (UAT)</div>
+            <p>Sesiones prácticas en campo con la Líder de Calle (Mgtr. Evelyn Hackett), validando la usabilidad, legibilidad y flujo de registro con datos reales.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        El principio Oversight de LOL se materializa en la Fase de Pruebas.
+        No nos conformamos con pruebas manuales: implementamos una suite automatizada con Jest y React Testing Library con 43 pruebas unitarias con un 100% de aprobación.
+        Además, utilizamos el Firebase Emulator Suite para simular la base de datos de manera offline y cerramos con pruebas UAT directamente con la líder de calle en el sector La Barranca.
+      </aside>
+    </section>
+
+    <!-- Slide 8.5: Fase de Lanzamiento y Despliegue -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">FASE 5: PUESTA EN PRODUCCIÓN Y TRANSFERENCIA</div>
+      <h2>Lanzamiento, Despliegue y Capacitación</h2>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card highlight fragment fade-up">
+          <div class="card-title">Despliegue en Firebase Hosting</div>
+          <p>La aplicación fue compilada con <code>npm run build</code> y desplegada en la CDN global de Google Firebase Hosting con certificado SSL/HTTPS automático y alta velocidad de carga.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title">Capacitación Comunitaria</div>
+          <p>Jornada formativa presencial con los líderes de calle y la vocería principal, enseñando el manejo del censo digital, la búsqueda de familias y la emisión de actas.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title">Manuales Entregados</div>
+          <p>Entrega formal del <strong>Manual de Usuario</strong> (guía visual ilustrada paso a paso) y el <strong>Manual Técnico</strong> (documentación de código, esquemas NoSQL y despliegue).</p>
+        </div>
+      </div>
+      <div class="stat fragment fade-up" style="margin-top:0.5em;">
+        <div class="num">100%</div>
+        <div class="label">Operativo en Producción con URL Pública y Certificado Seguro HTTPS</div>
+      </div>
+      <aside class="notes">
+        La Fase 5 culminó con el despliegue exitoso en Firebase Hosting. La plataforma quedó accesible públicamente bajo HTTPS desde cualquier computadora o teléfono inteligente.
+        Acompañamos el despliegue con una jornada de capacitación técnica y la entrega del Manual de Usuario y Manual Técnico al Consejo Comunal.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       9. SISTEMA (Ponente: Gabriel Morales)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 9.1: Arquitectura Tecnológica Integral -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">INGENIERÍA DEL PRODUCTO FINAL</div>
+      <h2>Arquitectura Tecnológica del SIW-CC</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Arquitectura Cliente-Servidor BaaS (Serverless)</div>
+            <p>El sistema opera como una <strong>Single Page Application (SPA)</strong> desacoplada, conectada a la infraestructura backend de Google Firebase:</p>
+            <ul>
+              <li><strong>Frontend:</strong> React 18, TailwindCSS para estilos responsive, Lucide React para iconografía accesible.</li>
+              <li><strong>Backend BaaS:</strong> Firebase Cloud Firestore como motor de base de datos NoSQL reactivo; Firebase Auth para gestión criptográfica de sesiones.</li>
+              <li><strong>Hosting:</strong> Firebase Hosting con CDN global y caché perimetral.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="card accent">
+            <div class="card-title">Seguridad y Mitigación STRIDE</div>
+            <p>Se aplicó el modelo de amenazas STRIDE:</p>
+            <ul>
+              <li><strong>Spoofing:</strong> Autenticación Firebase con tokens JWT.</li>
+              <li><strong>Tampering:</strong> Reglas declarativas en <code>firestore.rules</code> que validan esquema y tipos.</li>
+              <li><strong>Elevation of Privilege:</strong> Verificación estricta de roles RBAC en cada lectura y escritura.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Pasamos ahora a la demostración del Sistema.
+        Esta diapositiva resume la arquitectura integral: un cliente React SPA moderno conectado directamente a Google Firebase.
+        No hay servidores intermediarios lentos ni vulnerables; la seguridad está blindada con tokens JWT en Firebase Authentication y reglas declarativas de Firestore evaluadas en el servidor de Google bajo el modelo STRIDE.
+      </aside>
+    </section>
+
+    <!-- Slide 9.2: Módulo 1 - Autenticación y RBAC -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Autenticación y Control de Roles (RBAC)</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura1.png" alt="Pantalla de Autenticación SIW-CC">
+          </div>
+          <div class="img-caption">Captura 1: Módulo de Acceso y Selección de Perfil en el SIW-CC.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Mecanismo de Acceso Seguro</div>
+            <p>Inicio de sesión seguro para la Vocería Principal y Líderes de Calle con validación criptográfica de contraseñas mediante Firebase Auth.</p>
+          </div>
+          <div class="card" style="margin-top:0.35em;">
+            <div class="card-title">Acceso de Invitados / Ciudadanos</div>
+            <p>Permite el acceso liviano a los vecinos del sector identificándose por su nombre, habilitando exclusivamente la visualización de los comunicados comunitarios públicos sin exponer información censal sensible.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Aquí vemos la Captura 1: el módulo de autenticación.
+        El sistema distingue dos formas de entrada: los voceros autorizados ingresan con sus credenciales seguras para administrar censo y entregas; mientras que cualquier habitante de la comunidad puede acceder en modo 'Invitado' para consultar la cartelera de comunicados públicos, garantizando privacidad y transparencia.
+      </aside>
+    </section>
+
+    <!-- Slide 9.3: Módulo 2 - Dashboard en Tiempo Real -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Panel de Control (Dashboard) Central</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura2.png" alt="Dashboard Principal SIW-CC">
+          </div>
+          <div class="img-caption">Captura 2: Panel de Control en tiempo real con indicadores consolidados.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Visión Estratégica Inmediata</div>
+            <p>Al iniciar sesión, el vocero accede a una consola con métricas clave actualizadas instantáneamente mediante listeners reactivos de Firestore:</p>
+            <ul>
+              <li><strong>Total de Familias Censadas:</strong> Conteo automático de núcleos familiares activos.</li>
+              <li><strong>Total de Habitantes:</strong> Sumatoria en vivo de todas las cargas familiares.</li>
+              <li><strong>Eventos de Entrega Activos:</strong> Estado de las jornadas CLAP o beneficios en curso.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        La Captura 2 muestra el Dashboard o Panel de Control.
+        Apenas la líder de calle abre el sistema, tiene ante sus ojos las métricas vitales de la comunidad: cuántas familias están censadas, cuántos habitantes reales habitan en el barrio y cuáles jornadas están activas, todo sincronizado en tiempo real sin recargar la página.
+      </aside>
+    </section>
+
+    <!-- Slide 9.4: Módulo 3 - Censo Familiar Digital -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Censo Familiar Digital y Gestión de Integrantes</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura3.png" alt="Censo Familiar Digital">
+          </div>
+          <div class="img-caption">Captura 3: Ficha de Registro Familiar y Gestión de Cargas Familiares.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Corazón Administrativo del SIW-CC</div>
+            <p>Sustituye por completo los antiguos cuadernos de hojas sueltas:</p>
+            <ul>
+              <li><strong>Ficha de Hogar:</strong> Registro del Jefe de Familia con validación de C.I única, dirección, teléfono y sector de residencia.</li>
+              <li><strong>Integrantes Familiares:</strong> Sub-colección dinámica para vincular hijos, adultos mayores o dependientes, especificando parentesco, edad y condición de salud.</li>
+              <li><strong>Búsqueda Instantánea:</strong> Filtro en milisegundos por cédula o apellido.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        En la Captura 3 apreciamos el Censo Familiar Digital, que es el corazón de la aplicación.
+        Aquí se registra al jefe de familia y a cada uno de sus integrantes. El sistema valida automáticamente que una misma cédula no pueda ser registrada dos veces, eliminando de raíz el problema histórico de familias duplicadas en los censos comunales.
+      </aside>
+    </section>
+
+    <!-- Slide 9.5: Módulo 4 - Gestión de Eventos y Entregas -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Eventos de Entrega y Trazabilidad de Beneficios</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura4.png" alt="Gestión de Eventos de Entrega">
+          </div>
+          <div class="img-caption">Captura 4: Registro de Jornadas y Confirmación de Recepción de Insumos.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Auditoría Social y Cero Opacidad</div>
+            <p>Control exacto de las jornadas de distribución comunitaria (bolsas CLAP, cilindros de gas, combos proteicos):</p>
+            <ul>
+              <li><strong>Creación de la Jornada:</strong> Nombre, fecha y tipo de beneficio distribuido.</li>
+              <li><strong>Cotejo y Despacho:</strong> Búsqueda del jefe de hogar y marcado de "Entregado" con registro de fecha y hora exacta.</li>
+              <li><strong>Prevención de Fraude:</strong> El sistema bloquea automáticamente entregas dobles para un mismo hogar en la misma jornada.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        La Captura 4 corresponde a la Gestión de Eventos y Distribución de Beneficios.
+        Cuando llega una jornada de alimentación o gas al sector La Barranca, los líderes de calle registran la entrega en vivo. Al marcar una familia como beneficiada, el sistema genera la constancia digital y bloquea cualquier intento de registrar un doble beneficio para esa misma casa.
+      </aside>
+    </section>
+
+    <!-- Slide 9.6: Módulo 5 - Demografía y Tablero Estadístico -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Tablero Estadístico y Demografía Poblacional</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="img-frame">
+            <img src="img/captura5.png" alt="Reportes y Demografía">
+          </div>
+          <div class="img-caption">Captura 5: Visualización analítica de indicadores poblacionales en vivo.</div>
+        </div>
+        <div class="split-right">
+          <div class="card highlight">
+            <div class="card-title">Inteligencia de Datos Comunitaria</div>
+            <p>Generación automatizada de reportes demográficos sin necesidad de tabular manualmente:</p>
+            <ul>
+              <li><strong>Distribución Etaria:</strong> Conteo de niños, adolescentes, adultos y personas de la tercera edad.</li>
+              <li><strong>Pirámide Poblacional:</strong> Segmentación por género y condiciones especiales.</li>
+              <li><strong>Soporte para Toma de Decisiones:</strong> Información lista para solicitar medicamentos o insumos ante entes gubernamentales.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        En la Captura 5 tenemos el Tablero Estadístico.
+        Anteriormente, cuando un ministerio o la alcaldía solicitaba cuántos niños o adultos mayores vivían en La Barranca, los voceros tardaban días contando hojas de papel. Hoy, este módulo calcula la pirámide poblacional en un clic con datos 100% verídicos.
+      </aside>
+    </section>
+
+    <!-- Slide 9.7: Módulo 6 - Constancias y Comunicados -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">DEMOSTRACIÓN DE MÓDULOS</div>
+      <h2>Constancias Comunitarias y Cartelera Digital</h2>
+      <div class="card-grid cols-2">
+        <div>
+          <div class="img-frame">
+            <img src="img/captura6.png" alt="Generador de Constancias">
+          </div>
+          <div class="img-caption">Captura 6: Emisión formal de Constancias de Residencia.</div>
+        </div>
+        <div>
+          <div class="img-frame">
+            <img src="img/captura7.png" alt="Cartelera de Comunicados">
+          </div>
+          <div class="img-caption">Captura 7: Muro de Comunicados para la Comunidad.</div>
+        </div>
+      </div>
+      <div class="card highlight" style="margin-top:0.4em;">
+        <div class="card-title">Servicio Directo al Ciudadano</div>
+        <p><strong>Constancias Digitales:</strong> Generación en segundos de documentos membretados oficiales listos para imprimir con firma y sello.<br>
+           <strong>Cartelera de Comunicados:</strong> Canal oficial donde los voceros publican avisos de reuniones, cortes de servicio o convocatorias comunitarias con acceso abierto para los vecinos.</p>
+      </div>
+      <aside class="notes">
+        Las Capturas 6 y 7 evidencian el servicio directo a los habitantes:
+        Por un lado, el generador digital de constancias de residencia, que rellena automáticamente los datos del habitante y emite el documento oficial listo para imprimir.
+        Y por el otro, la cartelera digital de comunicados para mantener a todo el barrio informado sin depender de carteles de papel en los postes.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       10. CONCLUSIONES Y RECOMENDACIONES (Ponente: Gabriel Morales)
+       =================================================================================== -->
+  <section>
+    <!-- Slide 10.1: Cumplimiento de los Propósitos -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">BALANCE DE RESULTADOS</div>
+      <h2>Cumplimiento de los Propósitos del Proyecto</h2>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card highlight fragment fade-up">
+          <div class="card-title"><span class="pill green">Cumplido 100%</span> Propósito 1: Requisitos</div>
+          <p>Se determinaron y formalizaron la totalidad de Requisitos Funcionales y No Funcionales mediante las cuatro fases del marco <strong>LAZY</strong> y la entrega de la <strong>Bitácora de Cruce</strong>.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title"><span class="pill green">Cumplido 100%</span> Propósito 2: Diseño</div>
+          <p>Se diseñó una arquitectura cliente-BaaS desacoplada, el esquema NoSQL en Cloud Firestore con control RBAC y una interfaz adaptada bajo el principio <strong>Logic</strong> de LOL.</p>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title"><span class="pill green">Cumplido 100%</span> Propósito 3: Implantación</div>
+          <p>Se codificó, probó con 43 pruebas automatizadas Jest, validó en campo con la Líder de Calle y se desplegó en Firebase Hosting con capacitación y manuales.</p>
+        </div>
+      </div>
+      <div class="stat fragment fade-up" style="margin-top:0.5em;">
+        <div class="num">0%</div>
+        <div class="label">Pérdida de Información Censal y Duplicidad en la Entrega de Beneficios</div>
+      </div>
+      <aside class="notes">
+        Llegamos a las Conclusiones y Recomendaciones.
+        Podemos afirmar con orgullo académico que los tres Propósitos Específicos fueron cumplidos al 100%: Requisitos determinados con LAZY, estructura diseñada con LOL, e implantación operativa total del software.
+        El impacto medible más contundente es la reducción a cero de registros perdidos y la eliminación de cobros o entregas dobles de beneficios.
+      </aside>
+    </section>
+
+    <!-- Slide 10.2: Limitaciones Afrontadas -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">ANÁLISIS CRÍTICO DEL CONTEXTO</div>
+      <h2>Limitaciones de la Investigación</h2>
+      <div class="card-grid cols-3" style="margin-top:0.45em;">
+        <div class="card fragment fade-up">
+          <div class="card-title">Conectividad e Infraestructura</div>
+          <p>Intermitencia del servicio eléctrico y fluctuaciones en la conectividad a internet en el sector La Barranca durante las jornadas de campo, lo que motivó optimizaciones en el consumo de datos.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">Brecha Digital Inicial</div>
+          <p>Cierto grado de resistencia al cambio y timidez frente al uso de computadoras en algunos voceros adultos mayores, superado gracias a la sencillez visual del sistema y a la capacitación presencial.</p>
+        </div>
+        <div class="card fragment fade-up">
+          <div class="card-title">Alcance Territorial Piloto</div>
+          <p>El sistema fue validado y ajustado específicamente a la realidad operativa del Consejo Comunal "La Barranca", requiriendo parametrizaciones adicionales para su replicación masiva.</p>
+        </div>
+      </div>
+      <aside class="notes">
+        Como en toda investigación científica seria, reconocemos las limitaciones afrontadas: la intermitencia eléctrica y de conectividad que caracteriza nuestro entorno regional; la brecha digital en adultos mayores que supimos mitigar con interfaces amigables; y el hecho de haber trabajado con una comunidad piloto específica.
+      </aside>
+    </section>
+
+    <!-- Slide 10.3: Recomendaciones -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">PERSPECTIVA Y SOSTENIBILIDAD</div>
+      <h2>Recomendaciones del Proyecto</h2>
+      <div class="card-grid cols-3" style="margin-top:0.4em;">
+        <div class="card highlight fragment fade-up">
+          <div class="card-title">Al Consejo Comunal "La Barranca"</div>
+          <ul>
+            <li>Realizar jornadas semestrales de actualización del censo digital.</li>
+            <li>Custodiar bajo llave las credenciales del usuario Administrador.</li>
+            <li>Promover que los vecinos consulten la cartelera digital desde sus teléfonos.</li>
+          </ul>
+        </div>
+        <div class="card accent fragment fade-up">
+          <div class="card-title">A Futuros Desarrolladores PNFI</div>
+          <ul>
+            <li>Implementar capacidades <strong>Offline-First</strong> avanzadas mediante Service Workers e IndexedDB (PWA).</li>
+            <li>Incorporar mapas georreferenciados con la librería <strong>Leaflet</strong> para ubicar cada vivienda satelitalmente.</li>
+            <li>Exportación nativa de actas en PDF descargables.</li>
+          </ul>
+        </div>
+        <div class="card highlight fragment fade-up">
+          <div class="card-title">A la UPTT "Mario Briceño Iragorry"</div>
+          <ul>
+            <li>Institucionalizar el uso de los marcos <strong>LAZY y LOL</strong> en los proyectos sociotecnológicos del PNFI.</li>
+            <li>Crear un repositorio central universitario para alojar y mantener proyectos comunales libres.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="notes">
+        Nuestras recomendaciones apuntan a tres horizontes:
+        Al Consejo Comunal: mantener el censo actualizado y cuidar sus credenciales.
+        A futuros compañeros estudiantes del PNFI: avanzar hacia una arquitectura Offline-First completa con PWA e incorporar mapas interactivos con Leaflet.
+        Y a nuestra universidad UPTTMBI: formalizar marcos sociotécnicos ágiles como LAZY y LOL en el pensum del PNFI.
+      </aside>
+    </section>
+
+    <!-- Slide 10.4: Código Fuente y Disponibilidad -->
+    <section>
+      <div class="speaker-badge gabriel"><span class="indicator"></span> Ponente: Gabriel Morales</div>
+      <div class="subtitle">SOBERANÍA Y TRANSFERENCIA TECNOLÓGICA</div>
+      <h2>Disponibilidad del Código y Repositorio</h2>
+      <div class="split-layout">
+        <div class="split-left">
+          <div class="card highlight">
+            <div class="card-title">Software Libre y Abierto para la Comunidad</div>
+            <p>El código fuente del <strong>SIW-CC</strong> está completamente versionado, comentado y disponible públicamente bajo licencia libre para su auditoría y réplica por otros consejos comunales:</p>
+            <ul>
+              <li><strong>Repositorio GitHub:</strong> Arquitectura modular en componentes reutilizables de React.</li>
+              <li><strong>Reglas de Seguridad:</strong> <code>firestore.rules</code> auditadas e incluidas en el control de versiones.</li>
+              <li><strong>Documentación Completa:</strong> Manual de Usuario y Manual Técnico adjuntos al expediente de grado.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="stat">
+            <div class="num">GIT</div>
+            <div class="label">Repositorio Público y Código Auditable</div>
+          </div>
+          <div class="card" style="margin-top:0.4em;">
+            <div class="card-title">Transferencia Tecnológica</div>
+            <p>Se realizó la entrega de credenciales maestras y documentación a la Líder de Calle Mgtr. Evelyn Hackett, consolidando la autogestión comunitaria.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        El software es libre, auditable y está a disposición de la comunidad y la universidad en nuestro repositorio GitHub. Entregamos formalmente la plataforma, las credenciales maestras y los manuales a la vocería comunitaria, cumpliendo con la soberanía tecnológica y la transferencia del conocimiento.
+      </aside>
+    </section>
+  </section>
+
+  <!-- ===================================================================================
+       11. CIERRE Y RONDA DE PREGUNTAS
+       =================================================================================== -->
+  <section class="closing-slide">
+    <img class="logo" src="img/logo.png" alt="Logo CC La Barranca" style="width:90px; margin-bottom:0.4em;">
+    <h1 style="font-size:1.6em; line-height:1.2; margin-bottom:0.1em; color:white;">
+      ¡Muchas Gracias por su Atención!
+    </h1>
+    <h2 style="font-size:0.65em; color:var(--cc-cream); font-weight:400; margin-top:0.1em; line-height:1.45; font-style:italic; max-width:850px;">
+      "Las computadoras son increíblemente rápidas, precisas y estúpidas; los seres humanos son increíblemente lentos, imprecisos y geniales; juntos somos poderosos más allá de toda medida."
+    </h2>
+    <p style="font-size:0.38em; color:var(--cc-cream); opacity:0.75; margin-top:0.3em; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">
+      — Albert Einstein
+    </p>
+    <div style="margin-top:1.2em; font-size:0.5em; color:var(--cc-cream); line-height:1.6;">
+      <strong>Equipo de Grado:</strong> Josué Abrahan Ortuño Quintero &nbsp;·&nbsp; Richard Godoy &nbsp;·&nbsp; Gabriel Andrés Morales Mago<br>
+      <strong>Institución:</strong> Universidad Politécnica Territorial del Estado Trujillo "Mario Briceño Iragorry" (UPTTMBI)<br>
+      <strong>Comunidad:</strong> Consejo Comunal "La Barranca" — Trujillo, 2026
+    </div>
+    <div style="margin-top:1.4em; padding:0.5em 1.4em; background:rgba(255,255,255,0.15); border-radius:30px; display:inline-block; border:1px solid rgba(255,255,255,0.3);">
+      <span style="font-size:0.55em; font-weight:700; letter-spacing:0.05em; color:white;">
+        RONDA DE PREGUNTAS Y COMENTARIOS DEL JURADO EVALUADOR
+      </span>
+    </div>
+    <aside class="notes">
+      Con esto concluimos la defensa de nuestro Proyecto Socio-Tecnológico: Sistema de Información Web para la Gestión Administrativa del Consejo Comunal La Barranca.
+      Agradecemos a Dios, a la UPTTMBI, a nuestro asesor Ing. Luis Colmenares, a los representantes institucionales y comunitarios, y a la combativa comunidad de La Barranca.
+      Quedamos a la entera disposición del distinguido jurado evaluador para responder sus preguntas, dudas y comentarios. Muchas gracias.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<!-- Reveal.js Scripts & Initialization -->
+<script src="reveal-dist/dist/reveal.js"></script>
+<script src="reveal-dist/plugin/notes/notes.js"></script>
+<script src="reveal-dist/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    width: 1100,
+    height: 700,
+    margin: 0.04,
+    center: false,
+    navigationMode: 'linear',
+    plugins: [ RevealNotes, RevealHighlight ]
+  });
+
+  // Auto-scroll newly revealed fragments into view
+  Reveal.on('fragmentshown', function(event) {
+    if (event.fragment) {
+      event.fragment.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  // Always reset scroll position to top when transitioning to any slide
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide) {
+      event.currentSlide.scrollTop = 0;
+    }
+  });
+
+  // Smart keyboard navigation: Scroll through content BEFORE jumping to next slide
+  window.addEventListener('keydown', function(e) {
+    // Ignore key combinations with ctrl, alt, meta
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+    const currentSlide = Reveal.getCurrentSlide();
+    if (!currentSlide) return;
+
+    const scrollStep = 180;
+    const scrollTolerance = 15;
+    const canScrollDown = (currentSlide.scrollHeight - currentSlide.scrollTop - currentSlide.clientHeight) > scrollTolerance;
+    const canScrollUp = currentSlide.scrollTop > scrollTolerance;
+    const hasNextFragment = Reveal.availableFragments && Reveal.availableFragments().next;
+    const hasPrevFragment = Reveal.availableFragments && Reveal.availableFragments().prev;
+
+    // Handle DOWN arrow, PAGE DOWN, or SPACE
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+      // 1. If there's an unrevealed fragment, let Reveal reveal it
+      if (hasNextFragment) {
+        return;
+      }
+      // 2. If the current slide has content below the fold, scroll down first!
+      if (canScrollDown) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSlide.scrollBy({ top: scrollStep, behavior: 'smooth' });
+        return;
+      }
+      // 3. Reached bottom: advance to next slide
+      e.preventDefault();
+      e.stopPropagation();
+      Reveal.next();
+      return;
+    }
+
+    // Handle UP arrow or PAGE UP
+    if (e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+      // 1. If the current slide can scroll up, scroll up first!
+      if (canScrollUp) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSlide.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+        return;
+      }
+      // 2. If there are fragments to hide on this slide, let Reveal hide them
+      if (hasPrevFragment) {
+        return;
+      }
+      // 3. Reached top: go back to previous slide
+      e.preventDefault();
+      e.stopPropagation();
+      Reveal.prev();
+      return;
+    }
+  }, true);
+</script>
+</body>
+</html>
