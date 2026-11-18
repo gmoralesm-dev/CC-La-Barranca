@@ -33,6 +33,7 @@ const Reports = ({ db, userId }) => {
   const [familyReportData, setFamilyReportData] = useState({ members: [], receipts: [] });
   const [loadingFamily, setLoadingFamily] = useState(false);
   const familyReportRef = useRef(null);
+  const familyPdfRef = useRef(null);
 
   // Cargar eventos de entrega
   const fetchDeliveryEvents = useCallback(async () => {
@@ -115,7 +116,7 @@ const Reports = ({ db, userId }) => {
     const family = reportData?.familiesList?.find(f => f.id === selectedFamilyId);
     const fileName = `reporte-familiar-${family?.familyName?.replace(/\s+/g, '-').toLowerCase() || 'familia'}.pdf`;
     try {
-      await generatePDF(familyReportRef, fileName);
+      await generatePDF(familyPdfRef, fileName);
     } catch {
       alert('❌ Error al generar el PDF familiar');
     }
@@ -271,36 +272,6 @@ const Reports = ({ db, userId }) => {
             )}
           </div>
 
-          {/* PIE DE PÁGINA CON FIRMA Y SELLO HÚMEDO */}
-          <div className="mt-12 pt-6 border-t-2 border-gray-300">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4">
-              <div className="text-center w-full md:w-1/2">
-                <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-12"></div>
-                <p className="font-bold text-gray-800 text-sm">___________________________</p>
-                <p className="text-sm font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
-                <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
-              </div>
-              <div className="text-center w-full md:w-1/3 flex flex-col items-center">
-                <div className="border-2 border-dashed border-gray-400 rounded-full w-24 h-24 flex items-center justify-center mb-2 bg-gray-50">
-                  <span className="text-[10px] text-gray-500 text-center leading-tight px-2">
-                    Espacio para<br/>Sello Húmedo<br/>del C.C.
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 font-medium mt-2">
-                  Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 text-center">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                Documento generado automáticamente por el Sistema de Información
-              </p>
-              <p className="text-[10px] text-gray-400 mt-1">
-                Consejo Comunal La Barranca • Este reporte es de carácter informativo y confidencial.
-              </p>
-            </div>
-          </div>
-
         </div>
       </div>
 
@@ -432,36 +403,6 @@ const Reports = ({ db, userId }) => {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* PIE DE PÁGINA CON FIRMA */}
-            <div className="mt-12 pt-6 border-t-2 border-gray-300">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4">
-                <div className="text-center w-full md:w-1/2">
-                  <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-12"></div>
-                  <p className="font-bold text-gray-800 text-sm">___________________________</p>
-                  <p className="text-sm font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
-                  <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
-                </div>
-                <div className="text-center w-full md:w-1/3 flex flex-col items-center">
-                  <div className="border-2 border-dashed border-gray-400 rounded-full w-24 h-24 flex items-center justify-center mb-2 bg-gray-50">
-                    <span className="text-[10px] text-gray-500 text-center leading-tight px-2">
-                      Espacio para<br/>Sello Húmedo<br/>del C.C.
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 font-medium mt-2">
-                    Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6 text-center">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  Documento generado automáticamente por el Sistema de Información
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Consejo Comunal La Barranca • Este reporte es de carácter informativo y confidencial.
-                </p>
-              </div>
             </div>
           </div>
         )}
@@ -621,6 +562,144 @@ const Reports = ({ db, userId }) => {
           </div>
         </div>
       </div>
+
+      {/* Contenedor off-screen para exportación PDF Familiar */}
+      {selectedFamily && (
+        <div
+          ref={familyPdfRef}
+          className="absolute top-0 left-[-9999px] w-[210mm] bg-white p-8 text-black"
+        >
+          {/* ENCABEZADO CON LOGO */}
+          <div className="flex items-center gap-4 border-b-4 border-indigo-700 pb-4 mb-6">
+            <img src={logo} alt="CC La Barranca" className="h-20 w-auto" />
+            <div className="flex-1 text-center">
+              <h3 className="text-2xl font-bold text-gray-800">Consejo Comunal La Barranca</h3>
+              <h4 className="text-xl font-semibold text-indigo-700 mt-1">Reporte Integral de Familia</h4>
+              <p className="text-gray-600 text-sm mt-2">
+                Fecha de generación: <strong>{new Date().toLocaleDateString('es-VE', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Datos Generales */}
+          <div className="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-lg text-sm border border-gray-200">
+            <div>
+              <h5 className="font-bold text-gray-800 mb-2 border-b border-gray-300 pb-1">📌 Datos del Hogar</h5>
+              <p><strong>Familia:</strong> {selectedFamily.familyName}</p>
+              <p><strong>Jefe de Familia:</strong> {familyReportData.members.find(m => m.isHead)?.memberName || 'No registrado'}</p>
+              <p><strong>C.I. Jefe:</strong> {selectedFamily.cedulaJefe || 'N/A'}</p>
+              <p><strong>Dirección:</strong> {selectedFamily.direccion || 'No registrada'}</p>
+              <p><strong>Teléfono:</strong> {selectedFamily.telefonoContacto || 'No registrado'}</p>
+            </div>
+            <div>
+              <h5 className="font-bold text-gray-800 mb-2 border-b border-gray-300 pb-1">📦 Resumen de Suministros</h5>
+              <p><strong>Total Miembros:</strong> {familyReportData.members.length}</p>
+              <p><strong>Entregas de Gas/Bombonas:</strong> {gasReceipts.length} eventos</p>
+              <p><strong>Total de Bolsas CLAP:</strong> {familyReportData.receipts.reduce((sum, r) => sum + (r.bagQuantity || 0), 0)}</p>
+              {selectedFamily.bombonas && selectedFamily.bombonas.length > 0 && (
+                <p className="mt-1"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => b.tamano).join(', ')})</p>
+              )}
+            </div>
+          </div>
+
+          {/* Tabla de Miembros */}
+          <div className="mb-6">
+            <h5 className="font-bold text-gray-800 mb-2 text-base">Carga Familiar Detallada</h5>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-indigo-100 text-indigo-900 font-semibold border-b-2 border-indigo-300">
+                  <th className="p-2">Nombre</th>
+                  <th className="p-2">Cédula</th>
+                  <th className="p-2">Edad</th>
+                  <th className="p-2">Rol</th>
+                  <th className="p-2">Salud / Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {familyReportData.members.map((member) => (
+                  <tr key={member.id} className="border-b border-gray-200">
+                    <td className="p-2 font-medium">{member.memberName}</td>
+                    <td className="p-2">
+                      {member.memberCedula || (typeof member.age === 'number' && member.age < 9 ? 'Menor sin cédula' : 'N/A')}
+                    </td>
+                    <td className="p-2">{member.age || 'N/A'} años</td>
+                    <td className="p-2">{member.isHead ? 'Jefe' : 'Miembro'}</td>
+                    <td className="p-2">
+                      {member.discapacidad && 'Discapacidad. '}
+                      {member.enfermedadCronica && 'Enf. Crónica. '}
+                      {member.controlAntropometrico && 'Antropometría. '}
+                      {!member.discapacidad && !member.enfermedadCronica && !member.controlAntropometrico && '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Historial de Entregas */}
+          <div className="mb-6">
+            <h5 className="font-bold text-gray-800 mb-2 text-base">Historial de Entregas Recientes</h5>
+            {familyReportData.receipts.length === 0 ? (
+              <p className="text-gray-500 text-xs italic">No se registran entregas para esta familia.</p>
+            ) : (
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-300">
+                    <th className="p-2">Evento</th>
+                    <th className="p-2">Fecha</th>
+                    <th className="p-2">Recibido por</th>
+                    <th className="p-2 text-right">Bolsas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {familyReportData.receipts.slice(0, 5).map(receipt => (
+                    <tr key={receipt.id} className="border-b border-gray-200">
+                      <td className="p-2">{receipt.eventName}</td>
+                      <td className="p-2">{receipt.eventDate}</td>
+                      <td className="p-2">{receipt.receivedBy?.name || 'N/A'}</td>
+                      <td className="p-2 text-right font-bold">{receipt.bagQuantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* FIRMA Y SELLO HÚMEDO (SÓLO EN EL PDF) */}
+          <div className="mt-8 pt-4 border-t-2 border-gray-300">
+            <div className="flex justify-between items-center gap-6">
+              <div className="text-center w-1/2">
+                <div className="border-b-2 border-black w-3/4 mx-auto mb-2 h-10"></div>
+                <p className="font-bold text-gray-800 text-xs">___________________________</p>
+                <p className="text-xs font-semibold text-gray-700 mt-1">Vocera Principal Consejo Comunal</p>
+                <p className="text-xs text-gray-600">Consejo Comunal La Barranca</p>
+              </div>
+              <div className="text-center w-1/3 flex flex-col items-center">
+                <div className="border-2 border-dashed border-gray-400 rounded-full w-20 h-20 flex items-center justify-center mb-1 bg-gray-50">
+                  <span className="text-[9px] text-gray-500 text-center leading-tight px-1">
+                    Espacio para<br/>Sello Húmedo<br/>del C.C.
+                  </span>
+                </div>
+                <p className="text-[10px] text-gray-600 font-medium">
+                  Fecha de emisión: <span className="font-bold">{new Date().toLocaleDateString('es-VE')}</span>
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                Documento generado automáticamente por el Sistema de Información
+              </p>
+              <p className="text-[9px] text-gray-400 mt-0.5">
+                Consejo Comunal La Barranca • Este reporte es de carácter informativo y confidencial.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
