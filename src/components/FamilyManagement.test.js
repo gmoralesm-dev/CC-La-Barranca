@@ -62,12 +62,12 @@ describe('[YLD-01] FamilyManagement Component', () => {
     expect(screen.getByRole('button', { name: /añadir familia/i })).toBeInTheDocument();
   });
 
-  test('renderiza el botón de bombonas en la tarjeta de familia y abre el modal con "Añadir Bombona"', () => {
+  test('renderiza el botón de bombonas en la tarjeta de familia y muestra el tamaño formateado con kg', () => {
     onSnapshot.mockImplementation((query, callback) => {
       if (typeof callback === 'function') {
         callback({
           docs: [
-            { id: 'fam-1', data: () => ({ familyName: 'FAMILIA TEST', bombonas: [{ tamano: '10kg', condicion: 'Buen estado' }] }) }
+            { id: 'fam-1', data: () => ({ familyName: 'FAMILIA TEST', bombonas: [{ tamano: '10', condicion: 'Buen estado' }] }) }
           ]
         });
       }
@@ -76,6 +76,9 @@ describe('[YLD-01] FamilyManagement Component', () => {
 
     render(<FamilyManagement db={mockDb} userId={mockUserId} />);
     
+    // Verifica que se formatea con kg aun cuando en la BD esté como '10'
+    expect(screen.getByText(/\(10kg\)/i)).toBeInTheDocument();
+
     // Debe renderizar el botón de Bombonas al lado de Ver Miembros y Eliminar
     const bombonasBtn = screen.getByRole('button', { name: /bombonas/i });
     expect(bombonasBtn).toBeInTheDocument();

@@ -81,10 +81,21 @@ const FamilyManagement = ({ db, userId }) => {
         }
     };
 
+    // Función para formatear el tamaño de bombona asegurando la unidad 'kg'
+    const formatBombonaTamano = (val) => {
+        if (!val) return 'S/T';
+        const str = String(val).trim();
+        return str.toLowerCase().endsWith('kg') ? str : `${str}kg`;
+    };
+
     // Funciones para gestionar bombonas desde el modal de la familia
     const handleOpenBombonasModal = (family) => {
         setFamilyForBombonas(family);
-        setModalBombonasList(Array.isArray(family.bombonas) ? [...family.bombonas] : []);
+        const list = Array.isArray(family.bombonas) ? family.bombonas.map(b => ({
+            ...b,
+            tamano: b.tamano ? formatBombonaTamano(b.tamano) : ''
+        })) : [];
+        setModalBombonasList(list);
     };
 
     const handleCloseBombonasModal = () => {
@@ -240,7 +251,7 @@ const FamilyManagement = ({ db, userId }) => {
                                     <span className="font-medium text-indigo-800">
                                         {family.bombonas.length} {family.bombonas.length === 1 ? 'bombona' : 'bombonas'}
                                         <span className="text-gray-500 text-xs ml-1">
-                                            ({family.bombonas.map(b => `${b.tamano || 'S/T'}`).join(', ')})
+                                            ({family.bombonas.map(b => formatBombonaTamano(b.tamano)).join(', ')})
                                         </span>
                                     </span>
                                 ) : (

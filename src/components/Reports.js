@@ -6,6 +6,12 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 import logo from '../assets/logo-cc-la-barranca.png';
 
+const formatBombonaTamano = (val) => {
+  if (!val) return 'S/T';
+  const str = String(val).trim();
+  return str.toLowerCase().endsWith('kg') ? str : `${str}kg`;
+};
+
 const Reports = ({ db, userId }) => {
   // --- REPORTES GENERALES ---
   const { reportData, loading: reportsLoading, error: reportsError, refetch } = useReportData(db);
@@ -336,7 +342,7 @@ const Reports = ({ db, userId }) => {
                 <p className="text-sm"><strong>Entregas de Gas/Bombonas:</strong> {gasReceipts.length} eventos</p>
                 <p className="text-sm"><strong>Total de Bolsas CLAP Recibidas:</strong> {familyReportData.receipts.reduce((sum, r) => sum + (r.bagQuantity || 0), 0)}</p>
                 {selectedFamily.bombonas && selectedFamily.bombonas.length > 0 && (
-                  <p className="text-sm mt-2"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => b.tamano).join(', ')})</p>
+                  <p className="text-sm mt-2"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => formatBombonaTamano(b.tamano)).join(', ')})</p>
                 )}
               </div>
             </div>
@@ -601,7 +607,7 @@ const Reports = ({ db, userId }) => {
               <p><strong>Entregas de Gas/Bombonas:</strong> {gasReceipts.length} eventos</p>
               <p><strong>Total de Bolsas CLAP:</strong> {familyReportData.receipts.reduce((sum, r) => sum + (r.bagQuantity || 0), 0)}</p>
               {selectedFamily.bombonas && selectedFamily.bombonas.length > 0 && (
-                <p className="mt-1"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => b.tamano).join(', ')})</p>
+                <p className="mt-1"><strong>Cilindros Registrados:</strong> {selectedFamily.bombonas.length} ({selectedFamily.bombonas.map(b => formatBombonaTamano(b.tamano)).join(', ')})</p>
               )}
             </div>
           </div>
