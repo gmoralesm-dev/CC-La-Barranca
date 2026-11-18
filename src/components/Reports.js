@@ -388,7 +388,11 @@ const Reports = ({ db, userId }) => {
                     {familyReportData.members.map((member) => (
                       <tr key={member.id} className="border-b hover:bg-gray-50">
                         <td className="p-2 font-medium">{member.memberName}</td>
-                        <td className="p-2">{member.memberCedula || 'N/A'}</td>
+                        <td className="p-2">
+                          {member.memberCedula || (typeof member.age === 'number' && member.age < 9 ? (
+                            <span className="text-blue-600 italic">Menor sin cédula</span>
+                          ) : 'N/A')}
+                        </td>
                         <td className="p-2">{member.age || 'N/A'} años</td>
                         <td className="p-2">{member.isHead ? <span className="text-indigo-600 font-bold">Jefe</span> : 'Miembro'}</td>
                         <td className="p-2">

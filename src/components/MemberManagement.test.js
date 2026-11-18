@@ -105,4 +105,28 @@ describe('[YLD-03] MemberManagement — Núcleo familiar y registro de beneficio
       screen.queryByText(/jefe/i);
     expect(hasLoadingState || hasEmptyState).toBeTruthy();
   });
+
+  test('permite registrar menores de 9 años sin requerir cédula y muestra aviso de infante', () => {
+    const { container } = render(
+      <MemberManagement db={mockDb} userId={mockUserId} family={mockFamily} onBack={mockOnBack} />
+    );
+
+    // Ingresar fecha de nacimiento correspondiente a un menor de 9 años (ej: 4 años atrás)
+    const dateInput = container.querySelector('input[type="date"]');
+    expect(dateInput).toBeInTheDocument();
+
+    const fourYearsAgo = new Date();
+    fourYearsAgo.setFullYear(fourYearsAgo.getFullYear() - 4);
+    const dateStr = fourYearsAgo.toISOString().split('T')[0];
+
+    fireEvent.change(dateInput, { target: { value: dateStr } });
+
+    // Debe mostrar el aviso contextual de infante / menor de edad
+    expect(screen.getByText(/infante \/ menor de edad/i)).toBeInTheDocument();
+    expect(screen.getByText(/no posee cédula de identidad/i)).toBeInTheDocument();
+
+    // El input de cédula debe estar deshabilitado para evitar errores involuntarios
+    const cedulaInput = screen.getByPlaceholderText(/no aplica \(menor de 9 años\)/i);
+    expect(cedulaInput).toBeDisabled();
+  });
 });

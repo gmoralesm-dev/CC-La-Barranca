@@ -6,16 +6,17 @@ import { COLLECTION, DATA_DOCUMENT } from '../firebase';
 import { VALIDATORS, formatAndValidateCedula, sanitizeCapitalize, sanitizeText } from '../utils/validations';
 
 // 🧩 COMPONENTES UI REUTILIZABLES
-const FormInput = ({ label, error, value, onChange, onBlur, type = 'text', placeholder, required, transform }) => (
+const FormInput = ({ label, error, value, onChange, onBlur, type = 'text', placeholder, required, transform, disabled }) => (
   <div className="space-y-1">
     {label && <label className="block text-gray-700 text-sm font-bold">{label}{required && ' *'}</label>}
     <input
       type={type}
       value={value || ''}
-      onChange={(e) => onChange(transform ? transform(e.target.value) : e.target.value)}
+      onChange={(e) => onChange && onChange(transform ? transform(e.target.value) : e.target.value)}
       onBlur={onBlur}
       placeholder={placeholder}
-      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${error ? 'border-red-300 bg-red-50 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+      disabled={disabled}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200' : error ? 'border-red-300 bg-red-50 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
       required={required}
     />
     {error && <p className="text-red-500 text-xs flex items-center gap-1">⚠️ {error}</p>}
@@ -41,8 +42,12 @@ const FormSelect = ({ label, error, value, onChange, options, required }) => (
 const MemberCard = ({ member, onEdit, onDelete }) => (
   <div className={`bg-white rounded-xl shadow-md p-5 space-y-2 border ${member.isHead ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-gray-200'}`}>
     <h4 className="text-lg font-semibold text-gray-900">{member.memberName} {member.isHead && <span className="text-indigo-600 font-bold">(Jefe)</span>}</h4>
-    <p className="text-gray-700 text-sm">Cédula: {member.memberCedula || 'N/A'}</p>
-    <p className="text-gray-700 text-sm">Edad: {member.age || 'N/A'} | Género: {member.memberGender}</p>
+    <p className="text-gray-700 text-sm">
+      Cédula: <span className={member.memberCedula === 'Menor sin cédula' ? 'text-blue-600 italic font-medium' : ''}>
+        {member.memberCedula || (typeof member.age === 'number' && member.age < 9 ? 'Menor sin cédula' : 'N/A')}
+      </span>
+    </p>
+    <p className="text-gray-700 text-sm">Edad: {member.age !== undefined && member.age !== null ? member.age : 'N/A'} | Género: {member.memberGender}</p>
     <p className="text-gray-700 text-sm">Escolaridad: {member.escolaridad}</p>
     {member.discapacidad && <p className="text-red-600 text-sm font-medium"> Discapacidad: {member.tipoDiscapacidad}</p>}
     {member.enfermedadCronica && <p className="text-orange-600 text-sm font-medium">🏥 Enf. Crónica: {member.tipoEnfermedad}</p>}
@@ -141,20 +146,39 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   // --- VALIDACIÓN DEL FORMULARIO ---
   const validateField = useCallback((field, value, currentValues = formData) => {
     let err = '';
+    const age = calculateAge(currentValues.fechaNacimiento);
+    const isMinorUnder9 = !isHeadForm && typeof age === 'number' && age < 9;
+
     if (['memberName', 'direccion'].includes(field) && !VALIDATORS.name(value)) err = 'Solo letras y espacios permitidos';
-    if (field === 'memberCedula' && value) {
-      const cedRes = formatAndValidateCedula(value, currentValues.fechaNacimiento);
-      if (!cedRes.isValid) err = cedRes.error || 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+    
+    if (field === 'memberCedula') {
+      if (isHeadForm && !value?.trim()) {
+        err = 'La cédula del jefe de familia es obligatoria';
+      } else if (!isHeadForm && !isMinorUnder9 && currentValues.fechaNacimiento && !value?.trim()) {
+        err = 'Cédula requerida para mayores de 9 años';
+      } else if (value?.trim()) {
+        if (isMinorUnder9) {
+          err = 'En Venezuela los menores de 9 años no poseen cédula';
+        } else {
+          const cedRes = formatAndValidateCedula(value, currentValues.fechaNacimiento);
+          if (!cedRes.isValid) err = cedRes.error || 'Formato: V-XXXXXXXX o E-XXXXXXXX';
+        }
+      }
     }
+
     if (field === 'fechaNacimiento') {
       const res = VALIDATORS.date(value);
       if (!res.isValid) {
         err = res.error;
       } else if (currentValues.memberCedula) {
-        // Si ya hay cédula ingresada, validar consistencia con la edad calculada
-        const cedCheck = formatAndValidateCedula(currentValues.memberCedula, value);
-        if (!cedCheck.isValid && cedCheck.error) {
-          err = cedCheck.error;
+        const calculatedAge = calculateAge(value);
+        if (!isHeadForm && typeof calculatedAge === 'number' && calculatedAge < 9) {
+          err = 'En Venezuela la edad mínima para poseer cédula es de 9 años';
+        } else {
+          const cedCheck = formatAndValidateCedula(currentValues.memberCedula, value);
+          if (!cedCheck.isValid && cedCheck.error) {
+            err = cedCheck.error;
+          }
         }
       }
     }
@@ -165,7 +189,19 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   }, [isHeadForm, formData]);
 
   const handleFormChange = (field, value) => {
-    const updated = { ...formData, [field]: value };
+    let updated = { ...formData, [field]: value };
+    if (field === 'fechaNacimiento') {
+      const age = calculateAge(value);
+      if (!isHeadForm && typeof age === 'number' && age < 9) {
+        // Para menores de 9 años, auto-limpiar la cédula si había alguna
+        updated.memberCedula = '';
+        setFormErrors(prev => {
+          const c = { ...prev };
+          delete c.memberCedula;
+          return c;
+        });
+      }
+    }
     setFormData(updated);
     if (touched[field]) setFormErrors(prev => ({ ...prev, [field]: validateField(field, value, updated) }));
   };
@@ -176,8 +212,15 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   };
 
   const validateAll = () => {
+    const age = calculateAge(formData.fechaNacimiento);
+    const isMinorUnder9 = !isHeadForm && typeof age === 'number' && age < 9;
+
     const requiredFields = ['memberName', 'fechaNacimiento', 'memberGender', 'escolaridad'];
-    if (isHeadForm) requiredFields.push('direccion', 'telefonoContacto');
+    if (isHeadForm) {
+      requiredFields.push('memberCedula', 'direccion', 'telefonoContacto');
+    } else if (!isMinorUnder9 && formData.fechaNacimiento) {
+      requiredFields.push('memberCedula');
+    }
     
     const newErrors = {};
     let isValid = true;
@@ -185,13 +228,23 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
       const err = validateField(f, formData[f], formData);
       if (err) { newErrors[f] = err; isValid = false; }
     });
+
     if (formData.memberCedula) {
-      const cedRes = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
-      if (!cedRes.isValid) {
-        newErrors.memberCedula = cedRes.error || 'Cédula inválida';
+      if (isMinorUnder9) {
+        newErrors.memberCedula = 'En Venezuela los menores de 9 años no poseen cédula';
         isValid = false;
+      } else {
+        const cedRes = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+        if (!cedRes.isValid) {
+          newErrors.memberCedula = cedRes.error || 'Cédula inválida';
+          isValid = false;
+        }
       }
+    } else if (isMinorUnder9) {
+      // Para infantes menores de 9 años, la ausencia de cédula es completamente válida
+      delete newErrors.memberCedula;
     }
+
     setFormErrors(newErrors);
     return isValid;
   };
@@ -219,10 +272,20 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
     setError('');
     if (!validateAll()) return;
 
-    const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+    const age = calculateAge(formData.fechaNacimiento);
+    const isMinorUnder9 = !isHeadForm && typeof age === 'number' && age < 9;
+
+    let finalCedula = '';
+    if (isMinorUnder9) {
+      finalCedula = 'Menor sin cédula';
+    } else if (formData.memberCedula) {
+      const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+      finalCedula = formatted || formData.memberCedula;
+    }
+
     const data = {
       memberName: sanitizeCapitalize(formData.memberName),
-      memberCedula: formatted,
+      memberCedula: finalCedula,
       fechaNacimiento: formData.fechaNacimiento,
       age: calculateAge(formData.fechaNacimiento),
       memberGender: formData.memberGender,
@@ -246,7 +309,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
         await addDoc(collection(db, COLLECTION, DATA_DOCUMENT, 'families', family.id, 'members'), { ...data, createdAt: Date.now() });
         if (isHeadForm) {
           await updateDoc(doc(db, COLLECTION, DATA_DOCUMENT, 'families', family.id), {
-            cedulaJefe: formatted, 
+            cedulaJefe: finalCedula, 
             direccion: sanitizeText(formData.direccion), 
             telefonoContacto: formData.telefonoContacto?.trim() || ''
           });
@@ -321,6 +384,20 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
       <form onSubmit={handleSubmitMember} className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 space-y-4">
         <h3 className="text-xl font-semibold text-indigo-700">{isHeadForm ? '👑 Registrar Jefe de Familia' : formMode === 'edit' ? '✏️ Editar Miembro' : '➕ Nuevo Miembro'}</h3>
         
+        {/* Aviso contextual cuando es un menor de 9 años */}
+        {(() => {
+          const age = calculateAge(formData.fechaNacimiento);
+          const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
+          return isMinor ? (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md text-xs text-blue-900 flex items-center gap-2">
+              <span className="text-base">👶</span>
+              <div>
+                <strong>Infante / Menor de edad ({age} años):</strong> En la legislación venezolana no posee Cédula de Identidad. El registro se procesará automáticamente como <em>"Menor sin cédula"</em>.
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput 
             label="Nombre Completo" 
@@ -337,20 +414,27 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
             required 
             placeholder="Ej: María Pérez" 
           />
-          <FormInput 
-            label="Cédula" 
-            value={formData.memberCedula} 
-            onChange={v => handleFormChange('memberCedula', v.toUpperCase())} 
-            onBlur={() => {
-              if (formData.memberCedula) {
-                const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
-                if (formatted) handleFormChange('memberCedula', formatted);
-              }
-              handleFormBlur('memberCedula');
-            }} 
-            error={formErrors.memberCedula} 
-            placeholder="V-12345678 (mínimo 9 años)" 
-          />
+          {(() => {
+            const age = calculateAge(formData.fechaNacimiento);
+            const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
+            return (
+              <FormInput 
+                label={isMinor ? "Cédula (Exento: Menor < 9 años)" : isHeadForm ? "Cédula del Jefe de Familia *" : "Cédula *"} 
+                value={isMinor ? '' : formData.memberCedula} 
+                onChange={v => handleFormChange('memberCedula', v.toUpperCase())} 
+                onBlur={() => {
+                  if (formData.memberCedula && !isMinor) {
+                    const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+                    if (formatted) handleFormChange('memberCedula', formatted);
+                  }
+                  handleFormBlur('memberCedula');
+                }} 
+                error={formErrors.memberCedula} 
+                disabled={isMinor}
+                placeholder={isMinor ? "No aplica (Menor de 9 años)" : "V-12345678 (mínimo 9 años)"} 
+              />
+            );
+          })()}
         </div>
 
         {isHeadForm && (
