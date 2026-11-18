@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FamilyManagement from './FamilyManagement';
 import { onSnapshot } from 'firebase/firestore';
@@ -62,9 +62,30 @@ describe('[YLD-01] FamilyManagement Component', () => {
     expect(screen.getByRole('button', { name: /añadir familia/i })).toBeInTheDocument();
   });
 
-  test('renderiza el botón "Añadir Bombona"', () => {
+  test('renderiza el botón de bombonas en la tarjeta de familia y abre el modal con "Añadir Bombona"', () => {
+    onSnapshot.mockImplementation((query, callback) => {
+      if (typeof callback === 'function') {
+        callback({
+          docs: [
+            { id: 'fam-1', data: () => ({ familyName: 'FAMILIA TEST', bombonas: [{ tamano: '10kg', condicion: 'Buen estado' }] }) }
+          ]
+        });
+      }
+      return jest.fn();
+    });
+
     render(<FamilyManagement db={mockDb} userId={mockUserId} />);
+    
+    // Debe renderizar el botón de Bombonas al lado de Ver Miembros y Eliminar
+    const bombonasBtn = screen.getByRole('button', { name: /bombonas/i });
+    expect(bombonasBtn).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ver miembros/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /eliminar/i })).toBeInTheDocument();
+
+    // Al hacer clic, abre el modal y muestra el botón "Añadir Bombona"
+    fireEvent.click(bombonasBtn);
     expect(screen.getByRole('button', { name: /añadir bombona/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /guardar bombonas/i })).toBeInTheDocument();
   });
 
   test('muestra "Cargando familias..." inicialmente', () => {
