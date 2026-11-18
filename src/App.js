@@ -11,7 +11,7 @@ import Dashboard from './components/Dashboard';
 import Comunicados from './components/Comunicados';
 import SettingsPanel from './components/SettingsPanel';
 import logo from './assets/logo-cc-la-barranca.png';
-import { sanitizeCapitalize, sanitizeText } from './utils/validations';
+import { sanitizeCapitalize } from './utils/validations';
 
 const App = () => {
     const [userId, setUserId] = useState(null);
@@ -281,7 +281,7 @@ const App = () => {
                 </nav>
 
                 <main className="bg-gray-50 rounded-xl p-4 min-h-[400px]">
-                    {currentPage === 'dashboard' && <Dashboard userRole={userRole} />}
+                    {currentPage === 'dashboard' && <Dashboard userRole={userRole} onNavigate={setCurrentPage} />}
                     {currentPage === 'families' && isManagerRole() && <FamilyManagement db={db} userId={userId} />}
                     {currentPage === 'deliveries' && isManagerRole() && <DeliveryEvents db={db} userId={userId} />}
                     {currentPage === 'reports' && isManagerRole() && <Reports db={db} userId={userId} />}

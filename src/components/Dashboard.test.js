@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Dashboard from './Dashboard';
 import { onSnapshot } from 'firebase/firestore';
@@ -64,5 +64,34 @@ describe('[YLD-05] Dashboard Component — Estadísticas y reportes en tiempo re
   test('renderiza el texto "Sincronización en tiempo real activa"', () => {
     render(<Dashboard />);
     expect(screen.getByText(/sincronización en tiempo real activa/i)).toBeInTheDocument();
+  });
+
+  test('abre y cierra el modal de memoria histórica del imagotipo', () => {
+    render(<Dashboard />);
+    const storyBtn = screen.getByRole('button', { name: /historia del imagotipo/i });
+    expect(storyBtn).toBeInTheDocument();
+
+    // Modal no debe estar abierto inicialmente
+    expect(screen.queryByText(/identidad visual y memoria histórica/i)).not.toBeInTheDocument();
+
+    // Abrir modal
+    fireEvent.click(storyBtn);
+    expect(screen.getByText(/identidad visual y memoria histórica/i)).toBeInTheDocument();
+    expect(screen.getByText(/grammont de la mothe/i)).toBeInTheDocument();
+
+    // Cerrar modal con botón "Entendido"
+    const closeBtn = screen.getByRole('button', { name: /entendido/i });
+    fireEvent.click(closeBtn);
+    expect(screen.queryByText(/identidad visual y memoria histórica/i)).not.toBeInTheDocument();
+  });
+
+  test('renderiza acciones rápidas de gestor y llama a onNavigate al hacer clic', () => {
+    const handleNavigate = jest.fn();
+    render(<Dashboard userRole="administrador" onNavigate={handleNavigate} />);
+
+    expect(screen.getByText(/acciones rápidas de gestión/i)).toBeInTheDocument();
+    const familyBtn = screen.getByRole('button', { name: /gestionar familias/i });
+    fireEvent.click(familyBtn);
+    expect(handleNavigate).toHaveBeenCalledWith('families');
   });
 });
