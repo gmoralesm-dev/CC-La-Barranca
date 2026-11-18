@@ -63,7 +63,7 @@ const ReceiptCard = ({ receipt, onEdit, onDelete }) => (
   <div className="bg-white rounded-xl shadow-md p-5 space-y-2 border border-green-200">
     <p className="text-lg font-semibold text-gray-900">📦 {receipt.eventName} ({receipt.eventDate})</p>
     <p className="text-gray-700 text-sm">Tipo: {receipt.eventType} | Bolsas: {receipt.bagQuantity}</p>
-    <p className="text-gray-700 text-sm">Recibido por: {receipt.receivedBy.name} (CI: {receipt.receivedBy.cedula})</p>
+    <p className="text-gray-700 text-sm">Recibido por: {receipt.receivedBy?.name || 'N/A'} (CI: {receipt.receivedBy?.cedula || 'N/A'})</p>
     {receipt.notes && <p className="text-gray-600 text-xs italic">📝 {receipt.notes}</p>}
     <div className="flex justify-end gap-2 mt-3">
       <button onClick={() => onEdit(receipt)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Editar</button>
@@ -86,6 +86,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
   // Estado unificado para formulario de miembro/jefe
   const [formMode, setFormMode] = useState('add'); // 'add' | 'edit'
   const [isHeadForm, setIsHeadForm] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
   const [formData, setFormData] = useState({
     memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '',
     discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '',
@@ -251,20 +252,44 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
 
   // --- HANDLERS ---
   const openHeadForm = () => {
-    setIsHeadForm(true); setFormMode('add'); setFormData({ ...formData, memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '', direccion: '', telefonoContacto: '' });
-    setFormErrors({}); setTouched({});
+    setIsHeadForm(true);
+    setFormMode('add');
+    setFormData({
+      memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '',
+      discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '',
+      medicinas: '', controlAntropometrico: '', direccion: '', telefonoContacto: ''
+    });
+    setFormErrors({});
+    setTouched({});
+    setShowMemberModal(true);
   };
 
   const openMemberForm = (member = null) => {
     setIsHeadForm(false);
     if (member) {
       setFormMode('edit');
-      setFormData({ ...member, discapacidad: !!member.discapacidad, enfermedadCronica: !!member.enfermedadCronica });
+      setFormData({
+        ...member,
+        discapacidad: !!member.discapacidad,
+        enfermedadCronica: !!member.enfermedadCronica
+      });
     } else {
       setFormMode('add');
-      setFormData({ memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '', discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '', medicinas: '', controlAntropometrico: '' });
+      setFormData({
+        memberName: '', memberCedula: '', fechaNacimiento: '', memberGender: '', escolaridad: '',
+        discapacidad: false, tipoDiscapacidad: '', enfermedadCronica: false, tipoEnfermedad: '',
+        medicinas: '', controlAntropometrico: '', direccion: '', telefonoContacto: ''
+      });
     }
-    setFormErrors({}); setTouched({});
+    setFormErrors({});
+    setTouched({});
+    setShowMemberModal(true);
+  };
+
+  const closeMemberModal = () => {
+    setShowMemberModal(false);
+    setFormErrors({});
+    setTouched({});
   };
 
   const handleSubmitMember = async (e) => {
@@ -315,7 +340,7 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
           });
         }
       }
-      openMemberForm(); // Reset
+      closeMemberModal();
     } catch (err) {
       setError('Error guardando: ' + err.message);
     } finally {
@@ -380,129 +405,147 @@ const MemberManagement = ({ db, userId, family, onBack }) => {
       <h2 className="text-2xl font-bold text-indigo-700 text-center">Miembros: {family.familyName}</h2>
       {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">{error}</div>}
 
-      {/* 📝 FORMULARIO UNIFICADO (JEFE O MIEMBRO) */}
-      <form onSubmit={handleSubmitMember} className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 space-y-4">
-        <h3 className="text-xl font-semibold text-indigo-700">{isHeadForm ? '👑 Registrar Jefe de Familia' : formMode === 'edit' ? '✏️ Editar Miembro' : '➕ Nuevo Miembro'}</h3>
-        
-        {/* Aviso contextual cuando es un menor de 9 años */}
-        {(() => {
-          const age = calculateAge(formData.fechaNacimiento);
-          const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
-          return isMinor ? (
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md text-xs text-blue-900 flex items-center gap-2">
-              <span className="text-base">👶</span>
-              <div>
-                <strong>Infante / Menor de edad ({age} años):</strong> En la legislación venezolana no posee Cédula de Identidad. El registro se procesará automáticamente como <em>"Menor sin cédula"</em>.
-              </div>
+      {/* 📝 MODAL FORMULARIO UNIFICADO (JEFE O MIEMBRO) */}
+      {showMemberModal && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={closeMemberModal}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="text-xl font-bold text-indigo-700">
+                {isHeadForm ? '👑 Registrar Jefe de Familia' : formMode === 'edit' ? '✏️ Editar Miembro' : '➕ Nuevo Miembro'}
+              </h3>
+              <button onClick={closeMemberModal} className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none p-1">✕</button>
             </div>
-          ) : null;
-        })()}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput 
-            label="Nombre Completo" 
-            value={formData.memberName} 
-            onChange={v => handleFormChange('memberName', v)} 
-            onBlur={() => {
-              // Sanitizar a Title Case al salir del campo
-              if (formData.memberName) {
-                handleFormChange('memberName', sanitizeCapitalize(formData.memberName));
-              }
-              handleFormBlur('memberName');
-            }} 
-            error={formErrors.memberName} 
-            required 
-            placeholder="Ej: María Pérez" 
-          />
-          {(() => {
-            const age = calculateAge(formData.fechaNacimiento);
-            const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
-            return (
-              <FormInput 
-                label={isMinor ? "Cédula (Exento: Menor < 9 años)" : isHeadForm ? "Cédula del Jefe de Familia *" : "Cédula *"} 
-                value={isMinor ? '' : formData.memberCedula} 
-                onChange={v => handleFormChange('memberCedula', v.toUpperCase())} 
-                onBlur={() => {
-                  if (formData.memberCedula && !isMinor) {
-                    const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
-                    if (formatted) handleFormChange('memberCedula', formatted);
-                  }
-                  handleFormBlur('memberCedula');
-                }} 
-                error={formErrors.memberCedula} 
-                disabled={isMinor}
-                placeholder={isMinor ? "No aplica (Menor de 9 años)" : "V-12345678 (mínimo 9 años)"} 
-              />
-            );
-          })()}
-        </div>
+            <form onSubmit={handleSubmitMember} className="space-y-4">
+              {/* Aviso contextual cuando es un menor de 9 años */}
+              {(() => {
+                const age = calculateAge(formData.fechaNacimiento);
+                const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
+                return isMinor ? (
+                  <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md text-xs text-blue-900 flex items-center gap-2">
+                    <span className="text-base">👶</span>
+                    <div>
+                      <strong>Infante / Menor de edad ({age} años):</strong> En la legislación venezolana no posee Cédula de Identidad. El registro se procesará automáticamente como <em>"Menor sin cédula"</em>.
+                    </div>
+                  </div>
+                ) : null;
+              })()}
 
-        {isHeadForm && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput 
-              label="Dirección" 
-              value={formData.direccion} 
-              onChange={v => handleFormChange('direccion', v)} 
-              onBlur={() => {
-                if (formData.direccion) handleFormChange('direccion', sanitizeText(formData.direccion));
-                handleFormBlur('direccion');
-              }} 
-              error={formErrors.direccion} 
-              required 
-              placeholder="Calle, Sector, Casa" 
-            />
-            <FormInput 
-              label="Teléfono" 
-              value={formData.telefonoContacto} 
-              onChange={v => handleFormChange('telefonoContacto', v)} 
-              onBlur={() => {
-                if (formData.telefonoContacto) {
-                  const pRes = VALIDATORS.phone(formData.telefonoContacto);
-                  if (pRes.isValid && pRes.formatted) handleFormChange('telefonoContacto', pRes.formatted);
-                }
-                handleFormBlur('telefonoContacto');
-              }} 
-              error={formErrors.telefonoContacto} 
-              required 
-              placeholder="0412-1234567" 
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormInput
+                  label="Nombre Completo"
+                  value={formData.memberName}
+                  onChange={v => handleFormChange('memberName', v)}
+                  onBlur={() => {
+                    if (formData.memberName) handleFormChange('memberName', sanitizeCapitalize(formData.memberName));
+                    handleFormBlur('memberName');
+                  }}
+                  error={formErrors.memberName}
+                  required
+                  placeholder="Ej: María Pérez"
+                />
+                {(() => {
+                  const age = calculateAge(formData.fechaNacimiento);
+                  const isMinor = !isHeadForm && typeof age === 'number' && age < 9;
+                  return (
+                    <FormInput
+                      label={isMinor ? "Cédula (Exento: Menor < 9 años)" : isHeadForm ? "Cédula del Jefe de Familia *" : "Cédula *"}
+                      value={isMinor ? '' : formData.memberCedula}
+                      onChange={v => handleFormChange('memberCedula', v.toUpperCase())}
+                      onBlur={() => {
+                        if (formData.memberCedula && !isMinor) {
+                          const { formatted } = formatAndValidateCedula(formData.memberCedula, formData.fechaNacimiento);
+                          if (formatted) handleFormChange('memberCedula', formatted);
+                        }
+                        handleFormBlur('memberCedula');
+                      }}
+                      error={formErrors.memberCedula}
+                      disabled={isMinor}
+                      placeholder={isMinor ? "No aplica (Menor de 9 años)" : "V-12345678 (mínimo 9 años)"}
+                    />
+                  );
+                })()}
+              </div>
+
+              {isHeadForm && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormInput
+                    label="Dirección"
+                    value={formData.direccion}
+                    onChange={v => handleFormChange('direccion', v)}
+                    onBlur={() => {
+                      if (formData.direccion) handleFormChange('direccion', sanitizeText(formData.direccion));
+                      handleFormBlur('direccion');
+                    }}
+                    error={formErrors.direccion}
+                    required
+                    placeholder="Calle, Sector, Casa"
+                  />
+                  <FormInput
+                    label="Teléfono"
+                    value={formData.telefonoContacto}
+                    onChange={v => handleFormChange('telefonoContacto', v)}
+                    onBlur={() => {
+                      if (formData.telefonoContacto) {
+                        const pRes = VALIDATORS.phone(formData.telefonoContacto);
+                        if (pRes.isValid && pRes.formatted) handleFormChange('telefonoContacto', pRes.formatted);
+                      }
+                      handleFormBlur('telefonoContacto');
+                    }}
+                    error={formErrors.telefonoContacto}
+                    required
+                    placeholder="0412-1234567"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormInput label="Fecha Nacimiento" type="date" value={formData.fechaNacimiento} onChange={v => handleFormChange('fechaNacimiento', v)} onBlur={() => handleFormBlur('fechaNacimiento')} error={formErrors.fechaNacimiento} required />
+                <FormSelect label="Género" value={formData.memberGender} onChange={v => handleFormChange('memberGender', v)} options={['Masculino', 'Femenino', 'Otro']} required />
+                <FormSelect label="Escolaridad" value={formData.escolaridad} onChange={v => handleFormChange('escolaridad', v)} options={['Ninguna', 'Preescolar', 'Primaria', 'Secundaria', 'Diversificado', 'Universitaria', 'Técnica']} required />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={formData.discapacidad} onChange={e => handleFormChange('discapacidad', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
+                  <span>¿Tiene discapacidad?</span>
+                </label>
+                {formData.discapacidad && <FormInput label="Tipo de discapacidad" value={formData.tipoDiscapacidad} onChange={v => handleFormChange('tipoDiscapacidad', v)} />}
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={formData.enfermedadCronica} onChange={e => handleFormChange('enfermedadCronica', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
+                  <span>¿Enfermedad crónica?</span>
+                </label>
+                {formData.enfermedadCronica && (
+                  <>
+                    <FormInput label="Tipo de enfermedad" value={formData.tipoEnfermedad} onChange={v => handleFormChange('tipoEnfermedad', v)} />
+                    <FormInput label="Medicinas" value={formData.medicinas} onChange={v => handleFormChange('medicinas', v)} />
+                  </>
+                )}
+              </div>
+
+              <FormInput label="Control Antropométrico" value={formData.controlAntropometrico} onChange={v => handleFormChange('controlAntropometrico', v)} />
+
+              {/* Footer buttons */}
+              <div className="flex justify-end gap-3 pt-2 border-t">
+                <button type="button" onClick={closeMemberModal} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={loading} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition">
+                  {loading ? 'Guardando...' : isHeadForm ? 'Guardar Jefe' : formMode === 'edit' ? 'Actualizar' : 'Añadir Miembro'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormInput label="Fecha Nacimiento" type="date" value={formData.fechaNacimiento} onChange={v => handleFormChange('fechaNacimiento', v)} onBlur={() => handleFormBlur('fechaNacimiento')} error={formErrors.fechaNacimiento} required />
-          <FormSelect label="Género" value={formData.memberGender} onChange={v => handleFormChange('memberGender', v)} options={['Masculino', 'Femenino', 'Otro']} required />
-          <FormSelect label="Escolaridad" value={formData.escolaridad} onChange={v => handleFormChange('escolaridad', v)} options={['Ninguna', 'Preescolar', 'Primaria', 'Secundaria', 'Diversificado', 'Universitaria', 'Técnica']} required />
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={formData.discapacidad} onChange={e => handleFormChange('discapacidad', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
-            <span>¿Tiene discapacidad?</span>
-          </label>
-          {formData.discapacidad && <FormInput label="Tipo de discapacidad" value={formData.tipoDiscapacidad} onChange={v => handleFormChange('tipoDiscapacidad', v)} />}
-          
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={formData.enfermedadCronica} onChange={e => handleFormChange('enfermedadCronica', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
-            <span>¿Enfermedad crónica?</span>
-          </label>
-          {formData.enfermedadCronica && (
-            <>
-              <FormInput label="Tipo de enfermedad" value={formData.tipoEnfermedad} onChange={v => handleFormChange('tipoEnfermedad', v)} />
-              <FormInput label="Medicinas" value={formData.medicinas} onChange={v => handleFormChange('medicinas', v)} />
-            </>
-          )}
-        </div>
-
-        <FormInput label="Control Antropométrico" value={formData.controlAntropometrico} onChange={v => handleFormChange('controlAntropometrico', v)} />
-
-        <div className="flex justify-end gap-3 pt-2">
-          {(formMode === 'edit' || isHeadForm) && <button type="button" onClick={() => { setIsHeadForm(false); setFormMode('add'); setFormErrors({}); }} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancelar</button>}
-          <button type="submit" disabled={loading} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
-            {loading ? 'Guardando...' : isHeadForm ? 'Guardar Jefe' : formMode === 'edit' ? 'Actualizar' : 'Añadir Miembro'}
-          </button>
-        </div>
-      </form>
+      )}
 
       {/* 👥 LISTA DE MIEMBROS */}
       {!headExists ? (

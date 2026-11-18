@@ -34,10 +34,17 @@ jest.mock('../firebase', () => ({
   DATA_DOCUMENT: 'data',
 }));
 
-const setupFirestoreMocks = ({ invokeSnapshot = true } = {}) => {
+const setupFirestoreMocks = ({ invokeSnapshot = true, mockMembers = [], mockReceipts = [] } = {}) => {
+  let callIndex = 0;
   onSnapshot.mockImplementation((query, callback) => {
     if (invokeSnapshot && typeof callback === 'function') {
-      callback({ docs: [] });
+      callIndex++;
+      // Primer llamado es para 'members', segundo para 'receipts'
+      if (callIndex % 2 === 1) {
+        callback({ docs: mockMembers });
+      } else {
+        callback({ docs: mockReceipts });
+      }
     }
     return jest.fn();
   });
@@ -107,11 +114,26 @@ describe('[YLD-03] MemberManagement — Núcleo familiar y registro de beneficio
   });
 
   test('permite registrar menores de 9 años sin requerir cédula y muestra aviso de infante', () => {
+    // Proveer un jefe existente para que el botón sea "+ Añadir Miembro" (isHeadForm = false)
+    setupFirestoreMocks({
+      mockMembers: [
+        {
+          id: 'jefe-1',
+          data: () => ({ memberName: 'Juan Pérez', isHead: true, memberCedula: 'V-11223344' }),
+        },
+      ],
+    });
+
     const { container } = render(
       <MemberManagement db={mockDb} userId={mockUserId} family={mockFamily} onBack={mockOnBack} />
     );
 
-    // Ingresar fecha de nacimiento correspondiente a un menor de 9 años (ej: 4 años atrás)
+    // El formulario ahora está en un modal — abrir modal con "+ Añadir Miembro"
+    const addBtn = screen.getByRole('button', { name: /\+ añadir miembro/i });
+    expect(addBtn).toBeInTheDocument();
+    fireEvent.click(addBtn);
+
+    // Ahora el modal está abierto — buscar el input de fecha dentro del modal
     const dateInput = container.querySelector('input[type="date"]');
     expect(dateInput).toBeInTheDocument();
 
