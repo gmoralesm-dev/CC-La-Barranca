@@ -22,6 +22,18 @@ export const analytics = typeof window !== "undefined" ? getAnalytics(app) : nul
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// 🛡️ Habilitar persistencia offline en el navegador para resiliencia ante fallos de conexión
+if (typeof window !== "undefined") {
+  import("firebase/firestore").then(({ enableIndexedDbPersistence }) => {
+    if (typeof enableIndexedDbPersistence === "function") {
+      enableIndexedDbPersistence(db).catch((err) => {
+        // Modo silencioso: múltiples pestañas o entorno no compatible
+        console.warn("Persistencia offline Firestore:", err?.code || err);
+      });
+    }
+  }).catch(() => {});
+}
+
 // Nota: para desarrollo local con Firebase Emulator Suite, ver Sección 7 del Manual Técnico.
 
 // 📍 CENTRAL PATH CONFIGURATION
