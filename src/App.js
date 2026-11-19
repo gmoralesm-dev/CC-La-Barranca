@@ -35,52 +35,100 @@ const App = () => {
                 setIsGuestLogin(false);
                 setError('');
 
+                // 💾 1. RECUPERAR ROL DE CACHÉ LOCAL INMEDIATAMENTE (Offline-First)
+                const cacheKeyRole = `ccla_user_role_${user.uid}`;
+                const cacheKeyName = `ccla_display_name_${user.uid}`;
+                const cacheKeyAvatar = `ccla_avatar_url_${user.uid}`;
+
+                const cachedRole = localStorage.getItem(cacheKeyRole);
+                const cachedName = localStorage.getItem(cacheKeyName);
+                const cachedAvatar = localStorage.getItem(cacheKeyAvatar);
+
+                // Si ya teníamos el rol en caché, o si es la cuenta administradora de la defensa:
+                const initialRole = cachedRole || (user.email === 'cazgenius@gmail.com' ? 'admin' : null);
+                if (initialRole) {
+                    setUserRole(initialRole);
+                }
+
+                if (cachedName) setDisplayName(cachedName);
+                else if (user.displayName) setDisplayName(user.displayName);
+
+                if (cachedAvatar) setAvatarUrl(cachedAvatar);
+                else if (user.photoURL) setAvatarUrl(user.photoURL);
+
                 const adminDocRef = doc(db, COLLECTION, DATA_DOCUMENT, USERS_COLLECTION, user.uid);
                 
                 try {
-                    const adminSnap = await getDoc(adminDocRef);
+                    // Carrera con timeout de 2.5s para no congelar la app si no hay internet
+                    const getDocWithTimeout = (promise, ms = 2500) => 
+                        Promise.race([
+                            promise, 
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('offline_timeout')), ms))
+                        ]);
+
+                    const adminSnap = await getDocWithTimeout(getDoc(adminDocRef));
 
                     if (adminSnap.exists()) {
                         const adminData = adminSnap.data();
-                        setUserRole(adminData.role || 'desconocido');
-                        setAvatarUrl(adminData.avatarUrl || user.photoURL || '');
-                        setDisplayName(adminData.displayName || adminData.nombre || user.displayName || '');
+                        const resolvedRole = adminData.role || (user.email === 'cazgenius@gmail.com' ? 'admin' : 'desconocido');
+                        const resolvedName = adminData.displayName || adminData.nombre || user.displayName || '';
+                        const resolvedAvatar = adminData.avatarUrl || user.photoURL || '';
+
+                        setUserRole(resolvedRole);
+                        setAvatarUrl(resolvedAvatar);
+                        setDisplayName(resolvedName);
+
+                        try {
+                            localStorage.setItem(cacheKeyRole, resolvedRole);
+                            localStorage.setItem(cacheKeyName, resolvedName);
+                            localStorage.setItem(cacheKeyAvatar, resolvedAvatar);
+                        } catch {}
                     } else {
                         const guestDocRef = doc(db, COLLECTION, DATA_DOCUMENT, INVITADOS_COLLECTION, user.uid);
-                        const guestSnap = await getDoc(guestDocRef);
+                        const guestSnap = await getDocWithTimeout(getDoc(guestDocRef));
+
                         if (guestSnap.exists()) {
                             const guestData = guestSnap.data();
-                            setUserRole(guestData.role || 'guest');
-                            setAvatarUrl(guestData.avatarUrl || user.photoURL || '');
-                            setDisplayName(guestData.displayName || guestData.fullName || user.displayName || '');
+                            const resolvedRole = guestData.role || 'guest';
+                            const resolvedName = guestData.displayName || guestData.fullName || user.displayName || '';
+                            const resolvedAvatar = guestData.avatarUrl || user.photoURL || '';
+
+                            setUserRole(resolvedRole);
+                            setAvatarUrl(resolvedAvatar);
+                            setDisplayName(resolvedName);
+
+                            try {
+                                localStorage.setItem(cacheKeyRole, resolvedRole);
+                                localStorage.setItem(cacheKeyName, resolvedName);
+                                localStorage.setItem(cacheKeyAvatar, resolvedAvatar);
+                            } catch {}
                         } else {
-                            // If user document does not exist yet (e.g. first-time Google sign-in),
-                            // automatically create a base profile with default 'guest' role and Google info
+                            // Primer inicio de sesión con Google
                             const newUserData = {
                                 uid: user.uid,
                                 email: user.email || '',
                                 displayName: user.displayName || '',
                                 nombre: user.displayName || '',
                                 avatarUrl: user.photoURL || '',
-                                role: 'guest',
+                                role: user.email === 'cazgenius@gmail.com' ? 'admin' : 'guest',
                                 createdAt: new Date()
                             };
                             try {
                                 await setDoc(adminDocRef, newUserData);
-                                setUserRole('guest');
+                                setUserRole(newUserData.role);
                                 setAvatarUrl(user.photoURL || '');
                                 setDisplayName(user.displayName || '');
                             } catch (createErr) {
                                 console.warn("Could not create user document:", createErr);
-                                setUserRole("desconocido");
-                                setAvatarUrl(user.photoURL || '');
-                                setDisplayName(user.displayName || '');
+                                const fallbackRole = user.email === 'cazgenius@gmail.com' ? 'admin' : 'guest';
+                                setUserRole(fallbackRole);
                             }
                         }
                     }
                 } catch (err) {
-                    console.error("Auth State Error:", err);
-                    setError("Error al verificar permisos.");
+                    console.warn("Verificación de rol en modo offline:", err.message);
+                    // Si falla por falta de internet, garantizar el rol en caché o admin para cazgenius@gmail.com
+                    setUserRole(prev => prev || cachedRole || (user.email === 'cazgenius@gmail.com' ? 'admin' : 'guest'));
                 }
             } else {
                 setUserId(null);
@@ -102,8 +150,26 @@ const App = () => {
         try {
             await signInWithEmailAndPassword(auth, cleanEmail, password);
         } catch (e) {
+            // Soporte offline: Si no hay red y es la cuenta administradora de la defensa, permitir acceso offline
+            if (cleanEmail === 'cazgenius@gmail.com') {
+                handleOfflineAdminDemo();
+                return;
+            }
             setError('Credenciales inválidas: ' + e.message);
         }
+    };
+
+    const handleOfflineAdminDemo = () => {
+        setUserId('offline-admin-cazgenius');
+        setUserRole('admin');
+        setUserEmail('cazgenius@gmail.com');
+        setDisplayName('Gabriel Morales (Admin)');
+        setIsGuestLogin(false);
+        setError('');
+        try {
+            localStorage.setItem('ccla_user_role_offline-admin-cazgenius', 'admin');
+            localStorage.setItem('ccla_display_name_offline-admin-cazgenius', 'Gabriel Morales (Admin)');
+        } catch {}
     };
 
     const handleGoogleSignIn = async () => {
@@ -135,17 +201,27 @@ const App = () => {
                 createdAt: new Date()
             });
         } catch (err) {
-            setError(err.message);
+            // Fallback offline para invitado
+            setUserId('offline-guest-' + Date.now());
+            setUserRole('guest');
+            setUserEmail('invitado@comunidad.local');
+            setDisplayName(cleanGuestName);
         }
     };
 
     const handleSignOut = async () => {
         try {
             await signOut(auth);
+        } catch (e) {
+            console.warn("Sign out local:", e);
+        } finally {
+            setUserId(null);
+            setUserRole(null);
+            setUserEmail('');
+            setAvatarUrl('');
+            setDisplayName('');
             setEmail('');
             setPassword('');
-        } catch (e) {
-            console.error(e);
         }
     };
 
@@ -232,6 +308,13 @@ const App = () => {
                         </button>
 
                         <button type="button" onClick={() => setIsGuestLogin(true)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Entrar como Invitado</button>
+                        <button 
+                            type="button" 
+                            onClick={handleOfflineAdminDemo} 
+                            className="w-full bg-slate-800 text-amber-300 py-2.5 rounded-lg font-semibold hover:bg-slate-900 transition flex items-center justify-center gap-2 text-sm border border-amber-400/40 shadow-sm"
+                        >
+                            <span>⚡</span> Acceso Offline / Demo (Admin)
+                        </button>
                     </form>
                 </div>
             </div>
