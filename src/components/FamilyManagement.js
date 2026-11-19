@@ -18,6 +18,7 @@ const FamilyManagement = ({ db, userId }) => {
     const [familyForBombonas, setFamilyForBombonas] = useState(null);
     const [modalBombonasList, setModalBombonasList] = useState([]);
     const [savingBombonas, setSavingBombonas] = useState(false);
+    const [showFamilyHelp, setShowFamilyHelp] = useState(false);
 
     // useEffect para obtener las familias en tiempo real
     useEffect(() => {
@@ -195,12 +196,32 @@ const FamilyManagement = ({ db, userId }) => {
             {/* Formulario Limpio y Rápido para Añadir Familia */}
             <form onSubmit={handleAddFamily} className="bg-white p-6 rounded-xl shadow-md space-y-4 border border-indigo-200">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-gray-100 pb-3">
-                    <h3 className="text-xl font-semibold text-indigo-600">
-                        Registrar Nueva Familia
-                    </h3>
-                    <span className="text-xs text-gray-500 font-medium">
-                        💡 Las bombonas e integrantes se gestionan individualmente en cada familia registrada
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-semibold text-indigo-600">
+                            Registrar Nueva Familia
+                        </h3>
+                        <button
+                            type="button"
+                            onClick={() => setShowFamilyHelp(!showFamilyHelp)}
+                            className="p-1 rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition text-base"
+                            title="Información sobre gestión de familias"
+                        >
+                            💡
+                        </button>
+                    </div>
+                    {showFamilyHelp && (
+                        <div className="text-xs text-indigo-900 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-lg flex items-center justify-between gap-2">
+                            <span>Las bombonas e integrantes se gestionan individualmente en cada familia registrada.</span>
+                            <button
+                                type="button"
+                                onClick={() => setShowFamilyHelp(false)}
+                                className="text-gray-400 hover:text-gray-600 font-bold ml-1 text-xs"
+                                title="Cerrar aviso"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                     <input
